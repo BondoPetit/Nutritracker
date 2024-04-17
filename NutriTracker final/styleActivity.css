@@ -1,0 +1,59 @@
+/* Form container */
+.form-box {
+    max-width: 500px;
+    width: 100%; /* Ensure the form box takes full width of its container */
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center; /* Center align all content within the form box */
+    
+    /* Positioning */
+    position: absolute;
+    top: 160%; /* Position the top edge of the form box at 50% of its containing element */
+    left: 50%; /* Position the left edge of the form box at 50% of its containing element */
+    transform: translate(-50%, -50%); /* Center the form box horizontally and vertically */
+}
+
+/* Form title */
+#title {
+    color: #333;
+    font-size: 32px;
+    margin-bottom: 20px;
+}
+
+/* Form labels */
+form label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+    text-align: left; /* Align labels to the left */
+}
+
+/* Form input fields */
+form input[type="text"],
+form input[type="number"],
+form input[type="date"] {
+    width: 100%; /* Make inputs take full width */
+    box-sizing: border-box; /* Include padding in width calculation */
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+/* Submit button */
+form input[type="submit"] {
+    width: 100%;
+    padding: 10px;
+    background-color: #7cb56761;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+/* Hover effect on submit button */
+form input[type="submit"]:hover {
+    background-color: #1dd138;
+}
