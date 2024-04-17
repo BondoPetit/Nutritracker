@@ -1,31 +1,20 @@
-function openLoginPopup() {
-    document.getElementById('overlay').style.display = 'block';
-    document.getElementById('popup').style.display = 'block';
-    document.getElementById('popup-content').innerHTML = `
-        <h2>Login</h2>
-        <form>
-            <input type="text" placeholder="Username">
-            <input type="password" placeholder="Password">
-            <button type="submit">Login</button>
-        </form>
-    `;
-}
+let signupBtn = document.getElementById("signupBtn");
+let signinBtn = document.getElementById("signinBtn");
+let nameField = document.getElementById("nameField");
+let title = document.getElementById("title");
 
-function openSignUpPopup() {
-    document.getElementById('overlay').style.display = 'block';
-    document.getElementById('popup').style.display = 'block';
-    document.getElementById('popup-content').innerHTML = `
-        <h2>Sign Up</h2>
-        <form>
-            <input type="text" placeholder="Username">
-            <input type="password" placeholder="Password">
-            <input type="email" placeholder="Email">
-            <button type="submit">Sign Up</button>
-        </form>
-    `;
-}
+signinBtn.onclick = function () {
+    nameField.style.maxHeight = "0";
+    title.innerHTML = "Sign In";
+    signupBtn.classList.add("disable");
+    signinBtn.classList.remove("disable");
+};
 
-function closePopup() {
-    document.getElementById('overlay').style.display = 'none';
-    document.getElementById('popup').style.display = 'none';
-}
+signupBtn.onclick = function () {
+    nameField.style.maxHeight = "60px";
+    title.innerHTML = "Sign Up";
+    signupBtn.classList.remove("disable");
+    signinBtn.classList.add("disable");
+};
+
+
