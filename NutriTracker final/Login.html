@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styleLogin.css" />
+    <link rel="stylesheet" href="style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css">
+    <title>Login</title>
+</head>
+
+<body>
+
+    <img src="nav.jpg" alt="navPic" class="background-image">
+
+    <div class="content">
+        <div class="nav-field">
+            <h1 class="logo">NutriTracker</h1>
+        </div>
+
+        <br><br><br><br>
+
+        <div class="central-container">
+            <div class="under-container">
+                <div class="login" onclick="openLoginPopup()">Login</div>
+                <br>
+                <div class="signUp" onclick="openSignUpPopup()">Sign up</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+
+    <div class="popup" id="popup">
+        <div class="close-btn" onclick="closePopup()">X</div>
+        <div id="popup-content"></div>
+    </div>
+
+    <script src="scriptLogin.js"></script>
+</body>
+
+</html>
