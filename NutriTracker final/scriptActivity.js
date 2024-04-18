@@ -162,7 +162,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const metabolismResult = document.getElementById('metabolismResult');
         if (!isNaN(age) && !isNaN(weight)) {
             const basalMetabolism = calculateBasalMetabolism(age, weight, gender);
-            metabolismResult.textContent = `Basal Metabolism: ${basalMetabolism.toFixed(2)} kcal/day`;
+            metabolismResult.textContent = `Basal Metabolism: ${basalMetabolism.toFixed(2)} MJ`;
         } else {
             metabolismResult.textContent = 'Please enter valid age and weight.';
         }
