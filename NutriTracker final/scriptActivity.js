@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     const activities = {
         "everyday": {
             "Almindelig gang": 215,
@@ -80,7 +80,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     // Update activity options when category changes
-    categorySelect.addEventListener("change", function() {
+    categorySelect.addEventListener("change", function () {
         const selectedCategory = this.value;
         populateActivities(selectedCategory);
     });
@@ -88,4 +88,83 @@ document.addEventListener("DOMContentLoaded", function() {
     // Attach event listener to the form for calorie calculation
     const form = document.querySelector(".form-box");
     form.addEventListener("submit", calculateCalories);
+
+    // Calculate basal metabolism based on age, weight, and gender
+    const calculateBasalMetabolism = function (age, weight, gender) {
+        let basalMetabolism = 0;
+
+        if (gender === 'female') {
+            if (age < 3) {
+                basalMetabolism = (0.244 * weight) - 0.13;
+            } else if (age >= 4 && age <= 10) {
+                basalMetabolism = (0.085 * weight) + 2.03;
+            } else if (age >= 11 && age <= 18) {
+                basalMetabolism = (0.056 * weight) + 2.90;
+            } else if (age >= 19 && age <= 30) {
+                basalMetabolism = (0.0615 * weight) + 2.08;
+            } else if (age >= 31 && age <= 60) {
+                basalMetabolism = (0.0364 * weight) + 3.47;
+            } else if (age >= 61 && age <= 75) {
+                basalMetabolism = (0.0386 * weight) + 2.88;
+            } else if (age > 75) {
+                basalMetabolism = (0.0410 * weight) + 2.61;
+            }
+        } else if (gender === 'male') {
+            if (age < 3) {
+                basalMetabolism = (0.249 * weight) - 0.13;
+            } else if (age >= 4 && age <= 10) {
+                basalMetabolism = (0.095 * weight) + 2.11;
+            } else if (age >= 11 && age <= 18) {
+                basalMetabolism = (0.074 * weight) + 2.75;
+            } else if (age >= 19 && age <= 30) {
+                basalMetabolism = (0.064 * weight) + 2.84;
+            } else if (age >= 31 && age <= 60) {
+                basalMetabolism = (0.0485 * weight) + 3.67;
+            } else if (age >= 61 && age <= 75) {
+                basalMetabolism = (0.0499 * weight) + 2.93;
+            } else if (age > 75) {
+                basalMetabolism = (0.035 * weight) + 3.43;
+            }
+        }
+
+        return basalMetabolism;
+    };
+
+    // Modal functionality
+    const modalTrigger = document.getElementById('modalTrigger');
+    const modal = document.getElementById('activityModal');
+    const closeBtn = document.getElementsByClassName('close')[0];
+
+    // Function to open the modal
+    modalTrigger.onclick = function () {
+        modal.style.display = "block";
+    }
+
+    // Function to close the modal
+    closeBtn.onclick = function () {
+        modal.style.display = "none";
+    }
+
+    // Close the modal if user clicks outside the modal content
+    window.onclick = function (event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    };
+
+    // Calculate basal metabolism when "Calculate Basal Metabolism" button is clicked
+    const calculateMetabolismBtn = document.getElementById('calculateMetabolism');
+    calculateMetabolismBtn.addEventListener('click', function () {
+        const age = parseFloat(document.getElementById('age').value);
+        const weight = parseFloat(document.getElementById('weight').value);
+        const gender = document.getElementById('gender').value;
+
+        const metabolismResult = document.getElementById('metabolismResult');
+        if (!isNaN(age) && !isNaN(weight)) {
+            const basalMetabolism = calculateBasalMetabolism(age, weight, gender);
+            metabolismResult.textContent = `Basal Metabolism: ${basalMetabolism.toFixed(2)} kcal/day`;
+        } else {
+            metabolismResult.textContent = 'Please enter valid age and weight.';
+        }
+    });
 });

@@ -20,26 +20,26 @@
         <div class="nav-field">
             <h1 class="logo">NutriTracker</h1>
         </div>
-        
+
         <br><br><br><br>
 
-        <div class="form-box">
+        <div class="form-box" action="login.php" method="post">
             <h1 id="title">Sign Up</h1>
             <form>
                 <div class="input-group">
                     <div class="input-field" id="nameField">
                         <i class="fa-solid fa-user"></i>
-                        <input type="text" placeholder="Name">
+                        <input type="text" placeholder="Name" name="name">
                     </div>
 
-                    <div class="input-field">
+                    <div class="input-field" id="email">
                         <i class="fa-solid fa-envelope"></i>
-                        <input type="email" placeholder="Email">
+                        <input type="email" placeholder="Email" name="email">
                     </div>
 
-                    <div class="input-field">
+                    <div class="input-field" id="password">
                         <i class="fa-solid fa-lock"></i>
-                        <input type="password" placeholder="password">
+                        <input type="password" placeholder="password" name="password">
                     </div>
                     <p>Lost password <a href="#">Click Here!</a></p>
                 </div>
