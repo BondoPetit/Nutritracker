@@ -14,12 +14,6 @@
     transform: translate(-50%, -50%); /* Center the form box horizontally and vertically */
 }
 
-/* Form title */
-#title {
-    color: #333;
-    font-size: 32px;
-    margin-bottom: 20px;
-}
 
 /* Form labels */
 form label {
@@ -125,13 +119,13 @@ form input[type="submit"]:hover {
 }
 
 /* Star icon styling */
-.fa-star {
-    font-size: 24px;
-    color: gold;
+.fa-apple-alt {
+    font-size: 40px;
+    color: rgb(34, 165, 45);
     cursor: pointer;
     margin-bottom: 30px;
 }
 
-.fa-star:hover {
-    color: orange;
+.fa-apple-alt:hover {
+    color: rgb(250, 11, 3);
 }
