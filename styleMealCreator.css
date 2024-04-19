@@ -1,0 +1,324 @@
+/* Meal Creator */
+.central-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+
+.buttons-title {
+    display: flex;
+    align-items: center;
+}
+
+
+.add-buttons {
+    position: absolute; /* Fix the position of the buttons */
+    top: 20px; /* Adjust top position as needed */
+    right: 0; /* Adjust right position as needed */
+    display: flex;
+}
+
+.addMeal, .addLiquid {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    cursor: pointer;
+    color: white;
+}
+
+.addMeal {
+    background-color: #569BD5;
+    margin-right: 10px;
+}
+
+.addLiquid {
+    background-color: #91c789;
+    margin-right: 10px;
+}
+
+.plus {
+    color: #ffffff;
+    font-size: 220%;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.overskrifter h4.MealName {
+    margin-left: 195px; /* Adjust the margin as needed for spacing between elements */
+}
+
+.overskrifter h4.Kcal {
+    margin-left: 200px; /* Adjust the margin as needed for spacing between elements */
+}
+
+.overskrifter h4.Added {
+    margin-left: 200px; /* Adjust the margin as needed for spacing between elements */
+}
+
+.overskrifter h4.Ingredients {
+    margin-left: 100px; /* Adjust the margin as needed for spacing between elements */
+}
+
+.overskrifter h4.Eaten {
+    margin-left: 0px;
+}
+
+.total-kcal-per-100-grams {
+   margin-right: 100px;
+  }
+
+
+.meals-container {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    border-radius: 30px;
+    padding: 25px;
+    background-color: #DEF6D8;
+    margin-bottom: 10px;
+    color: black;
+}
+
+.meals-container .meal-name {
+    margin-left: 14%; /* Adjust the margin as needed */
+}
+
+.saved-number{
+    margin-right: 10px; /* Adjust the value as needed for proper spacing */
+}
+
+.saved-meal {
+    margin-left: 210px;
+}
+
+.saved-date {
+    margin-left: 45px;
+}
+
+.delete-meal {
+    margin-left: 10px;
+}
+
+.edit-meal {
+    margin-left: 30%; /* Adjust as needed for spacing */
+}
+
+
+  /* Popup - add meal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.search-result-item {
+    cursor: pointer;
+    padding: 5px;
+    border: 1px solid #ccc;
+    margin: 5px;
+    color: black;
+  }
+
+.saved-ingredient-count {
+  margin-left: 500px;
+}
+
+#selectedIngredients {
+    color: black !important; /* Set the text color to black */
+}
+
+#selectedIngredientsList {
+    color: black !important; /* Set the text color to black */
+}
+
+#popupTitle {
+    color:black
+}
+
+.search-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.search-container input[type="text"] {
+    width: 50px; /* Adjust the value as needed */
+}
+
+#searchInputAll {
+    margin-right: 10px; /* Adjust the margin as needed */
+}
+
+#searchButtonAll {
+    background-color: #569BD5;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+#searchButtonAll:hover {
+    background-color: #3574a3; /* Adjust the hover color as needed */
+}
+
+/* Styling for the nutritional summary text */
+.nutritional-text {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px; /* Increased space above the nutritional summary */
+    color: black;
+    font-size: 16px; /* Improved readability */
+    line-height: 1.5; /* Better line spacing */
+}
+
+/* Styling for each ingredient detail */
+.ingredient-details {
+    color: black;
+    margin-bottom: 15px; /* Increased space between items for better readability */
+    font-size: 14px; /* Slightly smaller than the summary for hierarchy */
+    line-height: 1.4; /* Adjusted for consistency */
+    display: flex;
+    justify-content: center;
+}
+
+/* Styling for the ingredients count */
+.ingredients-count {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px; /* Moved higher up for more prominence */
+    margin-bottom: 20px; /* Increased space before listing ingredients */
+    color: black;
+    font-weight: bold; /* Emphasize the count */
+    font-size: 18px; /* Larger text for visibility */
+}
+
+.meal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+}
+
+.meal-flex-container {
+    display: flex;
+    align-items: center;
+    flex-grow: 1; /* Allows the container to grow and fill the space */
+    gap: 10px; /* Adjusts gap between items */
+}
+
+.meal-details, .meal-actions {
+    display: flex;
+    align-items: center;
+}
+
+.meal-details {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Adjust space between meal details */
+    flex: 1; /* Allow meal details to grow but with a limit */
+}
+
+.meal-actions {
+    gap: 5px; /* Adjust space between action buttons */
+}
+
+.meal-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1; /* Allows the name to grow within the meal-details, up to a point */
+    min-width: 0; /* Helps with overflowing text issues in flexbox */
+}
+
+.ingredient-count {
+    white-space: nowrap;
+    margin-right: 200px; /* Ensure some spacing */
+}
+
+
+.meal-number-input {
+    width: 20px; /* Set the width to accommodate only a single digit */
+    padding: 5px; /* Add padding for better appearance */
+    border: 1px solid #ccc; /* Add a border for visibility */
+    border-radius: 5px; /* Add rounded corners */
+}
+
+.meal-number-input::-webkit-outer-spin-button,
+.meal-number-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.meal-number-input {
+    width: 30px; /* Adjust the width as needed */
+    padding: 5px; /* Add padding for better appearance */
+    text-align: center; /* Center the text within the input field */
+    border: 1px solid #ccc; /* Add a border to the input field */
+    border-radius: 3px; /* Add border radius for rounded corners */
+    outline: none; /* Remove default focus outline */
+}
+
+#ingredientModal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content,
+#nutritionalDataContent,
+#selectedIngredients,
+#selectedIngredientsList {
+    color: black !important;
+}
