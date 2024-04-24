@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="styleMealTracker.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css">
+    <title>Meal Tracker</title>
+
+</head>
+
+<body>
+    <img src="nav.jpg" alt="navPic" class="background-image">
+
+    <div class="content">
+        <div class="nav-field">
+            <h1 class="logo">NutriTracker</h1>
+            <h3><a href="MealCreator.html">Meal Creator</a></h3>
+            <h3><a href="MealTracker.html" class="active">Meal Tracker</a></h3>
+            <h3><a href="Activity.html">Activity Tracker</a></h3>
+            <h3><a href="DailyNutri.html">Daily Nutri</a></h3>
+        </div>
+
+        <br><br><br><br>
+
+        <div class="central-container">
+            <div class="under-container">
+                <div class="buttons-title">
+                    <h2>Meal Tracker</h2>
+
+                    <div class="add-buttons">
+                        <div class="addMeal">
+                            <div class="button-container" onclick="openIngredientOnlyModal()">+</div>
+                        </div>
+
+                        <div class="addLiquid">
+                            <div class="button-container" onclick="trackerPopup()">+</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overskrifter">
+                    <h4 class="MealNameTracker">Meal & Source</h4>
+                    <h4 class="MealName">Meal</h4>
+                    <h4 class="Kcal">Weigth and Energy</h4>
+                    <h4 class="Added">Added on</h4>
+                    <h4 class="Eaten">% of daily cons.</h4>
+                </div>
+
+                <div id="recordsContainer">
+                    <!-- Meals tracked will be applied here -->
+                </div>
+                <div id="nutritionalDisplay">
+
+                </div>
+
+                <!-- Popup for adding/editing meal -->
+                <div id="mealPopUp" class="modal">
+                    <div class="modal-content">
+                        <label for="mealName">Meal Name:</label>
+                        <select id="mealName" name="mealName"></select>
+                        <label for="mealWeight">Weight (g):</label>
+                        <input type="number" id="mealWeight" name="mealWeight" placeholder="Enter weight" required>
+                        <button onclick="saveTracker()">Save</button>
+                    </div>
+                </div>
+
+                <div id="mealIngredientsModal" class="modal">
+                    <!-- Modal content will be added dynamically by JavaScript -->
+                </div>
+
+                <!-- Modal to add ingredients-->
+                <div id="ingredientOnly" class="modal">
+                    <div class="modal-content">
+                        <span class="close" onclick="closeIngredientOnlyModal()">&times;</span>
+                        <h2>Add Ingredient Intake</h2>
+                        <form id="ingredientIntakeForm">
+                            <label for="ingredientName">Ingredient Name:</label>
+                            <input type="text" id="ingredientName" name="ingredientName" placeholder="Enter ingredient name" required>
+                            <!-- Tilføjelse af søgeknap ved siden af ingrediensnavn -->
+                            <button type="button" id="searchButtonAll">Search</button>
+                            <!-- Slut på tilføjelse -->
+                            <label for="ingredientWeight">Weight (g):</label>
+                            <input type="number" id="ingredientWeight" name="ingredientWeight" placeholder="Enter weight" required>
+                            <label for="intakeDate">Date:</label>
+                            <input type="date" id="intakeDate" name="intakeDate" required>
+                            <label for="intakeTime">Time:</label>
+                            <input type="time" id="intakeTime" name="intakeTime" required>
+                            <button type="button" onclick="addIngredientModal()">Save Ingredient Intake</button>
+                        </form>
+                    </div>
+                </div>
+                
+
+                <!-- Nutritional Info Modal -->
+                <div id="nutritionalDetailsModal" class="modal" style="display:none;">
+                    <div class="modal-content">
+                        <span class="close" onclick="closeNutritionalInfoModal()">&times;</span>
+                        <div id="nutritionalInfoContent"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+<script type="module" src="scriptTracker.js"></script>
+
+</html>

@@ -1,0 +1,47 @@
+.overskrifter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Adjusted for better alignment */
+    margin-bottom: 10px; /* Added margin for spacing */
+}
+
+.overskrifter h4 {
+    color: #9E9E9E;
+}
+
+.overskrifter h4.MealName {
+    margin-left: 15px; /* Adjusted for better spacing */
+}
+
+.overskrifter h4.Kcal {
+    margin-left: 50px;
+}
+
+.overskrifter h4.Added {
+    margin-left: 7%;
+}
+
+#dailyNutriContainer {
+    gap: 20px; /* Added spacing between elements */
+    overflow-y: auto;
+    margin-right: 10px; /* Tilføj mellemrum til højre side af hvert element */
+}
+
+/* Style for the list items displaying hourly intake data */
+.daily-intake-item {
+    list-style: none; /* Remove default list style */
+    margin-bottom: 20px; /* Add margin between list items */
+    padding: 20px; /* Add padding for better spacing */
+    background-color: #f29a8a; /* Add background color for better visibility */
+    border-radius: 10px; /* Add border radius for rounded corners */
+    display: flex; /* Display items in a flex container */
+    justify-content: space-between; /* Distribute items evenly along the main axis */
+    align-items: center; /* Align items vertically */
+}
+
+/* Style for the text content of the list items */
+.daily-intake-item span {
+    flex-grow: 40; /* Allow the content to grow and occupy remaining space */
+    margin-right: 300px; /* Add right margin for spacing between elements */
+}
+
