@@ -1,3 +1,5 @@
+fetch('http:')
+
 let signupBtn = document.getElementById("signupBtn");
 let signinBtn = document.getElementById("signinBtn");
 let nameField = document.getElementById("nameField");
@@ -16,5 +18,7 @@ signupBtn.onclick = function () {
     signupBtn.classList.remove("disable");
     signinBtn.classList.add("disable");
 };
+
+
 
 
