@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css" />
-    <link rel="stylesheet" href="styleMealTracker.css" />
+    <link rel="stylesheet" href="/NutriTracker/public/css/style.css">
+    <link rel="stylesheet" href="/NutriTracker/public/css/styleMealTracker.css">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css">
     <title>Meal Tracker</title>
@@ -13,7 +13,7 @@
 </head>
 
 <body>
-    <img src="nav.jpg" alt="navPic" class="background-image">
+    <img src="/NutriTracker/public/nav.jpg" alt="navPic" class="background-image">
 
     <div class="content">
         <div class="nav-field">
@@ -45,7 +45,7 @@
                 <div class="overskrifter">
                     <h4 class="MealNameTracker">Meal & Source</h4>
                     <h4 class="MealName">Meal</h4>
-                    <h4 class="Kcal">Weigth and Energy</h4>
+                    <h4 class="Kcal">Weight and Energy</h4>
                     <h4 class="Added">Added on</h4>
                     <h4 class="Eaten">% of daily cons.</h4>
                 </div>
@@ -80,9 +80,9 @@
                         <form id="ingredientIntakeForm">
                             <label for="ingredientName">Ingredient Name:</label>
                             <input type="text" id="ingredientName" name="ingredientName" placeholder="Enter ingredient name" required>
-                            <!-- Tilføjelse af søgeknap ved siden af ingrediensnavn -->
+                            <!-- Addition of search button next to ingredient name -->
                             <button type="button" id="searchButtonAll">Search</button>
-                            <!-- Slut på tilføjelse -->
+                            <!-- End of addition -->
                             <label for="ingredientWeight">Weight (g):</label>
                             <input type="number" id="ingredientWeight" name="ingredientWeight" placeholder="Enter weight" required>
                             <label for="intakeDate">Date:</label>
@@ -93,7 +93,6 @@
                         </form>
                     </div>
                 </div>
-                
 
                 <!-- Nutritional Info Modal -->
                 <div id="nutritionalDetailsModal" class="modal" style="display:none;">
@@ -107,6 +106,6 @@
     </div>
 
 </body>
-<script type="module" src="scriptTracker.js"></script>
+<script type="module" src="/NutriTracker/public/js/scriptTracker.js"></script>
 
 </html>

@@ -1,107 +1,96 @@
 const express = require('express');
 const sql = require('mssql');
 const app = express();
-const port = 3000;
+const port = 3001;
 
-//konfiguration af server
+// Configuration for the server and database
 const config = {
-    server:'nutritrackerserverexam.database.windows.net',
-    database:'NutriTracker',
+    server: 'nutritrackerserverexam.database.windows.net',
+    database: 'Login',
     user: 'Bondo',
     password: 'Pierre1969',
     options: {
-        encrypt:true
+        encrypt: true
     }
 };
 
-async function connectToDatabase(){
-    try {
-        await sql.connect(config);
-        console.log('Connected to database');
-    } catch(err){
-        console.err('Error connecting to database', err);
-    }
-}
-
-connectToDatabase();
-
-// Middleware til at analysere formularindsendelser
+// Middleware to parse form submissions
 app.use(express.urlencoded({ extended: true }));
 
-// Rute til startsiden
+// Route to serve the login page
 app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/login.html');
+    res.sendFile(__dirname + '/Login.html');
 });
 
-// Rute til behandling af formularindsendelse for oprettelse af bruger
+// Route to handle user registration form submission
 app.post('/register', async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        // Opret forbindelse til databasen
+        // Connect to the database
         const pool = await sql.connect(config);
 
-        // Udfør en SQL-forespørgsel for at kontrollere, om brugeren allerede findes
+        // Check if the user already exists
         const existingUser = await pool.request().query(`
-            SELECT * FROM Users
+            SELECT * FROM users
             WHERE Email = '${email}'
         `);
 
-        // Tjek om brugeren allerede eksisterer
+        // Check if the user already exists
         if (existingUser.recordset.length > 0) {
             res.send('Brugeren eksisterer allerede.');
         } else {
-            // Opret en ny bruger i databasen
+            // Create a new user in the database
             await pool.request().query(`
-                INSERT INTO Users (Email, PasswordHash)
+                INSERT INTO users (Email, Password)
                 VALUES ('${email}', '${password}')
             `);
     
             res.send('Bruger oprettet!');
         }
 
-        // Luk forbindelsen til databasen
-        await sql.close();
+        // Close the database connection
+        await pool.close();
     } catch (err) {
         console.error('Fejl under oprettelse af bruger:', err);
         res.status(500).send('Der opstod en fejl under oprettelse af bruger.');
     }
 });
 
-// Rute til behandling af login
+// Route to handle user login
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        // Opret forbindelse til databasen
+        // Connect to the database
         const pool = await sql.connect(config);
 
-        // Udfør en SQL-forespørgsel for at kontrollere, om brugeren findes i databasen
+        // Check if the user exists and password matches
         const result = await pool.request()
             .input('email', sql.NVarChar, email)
             .input('password', sql.NVarChar, password)
             .query(`
-                SELECT * FROM Users
-                WHERE Email = @email AND PasswordHash = @password
+                SELECT * FROM users
+                WHERE Email = @email
+                AND Password = @password
             `);
 
-        // Tjek om der er nogen rækker i resultatet (hvis der er, findes brugeren)
+        // Check if a user with matching credentials was found
         if (result.recordset.length > 0) {
             res.send('Velkommen ' + email + '! Du er logget ind.');
         } else {
             res.send('Ingen bruger fundet med de angivne oplysninger.');
         }
 
-        // Luk forbindelsen til databasen
-        await sql.close();
+        // Close the database connection
+        await pool.close();
     } catch (err) {
         console.error('Fejl under login:', err);
         res.status(500).send('Der opstod en fejl under login.');
     }
 });
 
-
-// Start serveren
+// Start the server
 app.listen(port, () => {
     console.log(`Serveren kører på http://localhost:${port}`);
 });
