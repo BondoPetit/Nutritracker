@@ -1,7 +1,7 @@
 const express = require('express');
 const sql = require('mssql');
 const app = express();
-const port = 3001;
+const port = 3002;
 
 // Configuration for the server and database
 const config = {
@@ -17,9 +17,12 @@ const config = {
 // Middleware to parse form submissions
 app.use(express.urlencoded({ extended: true }));
 
+// Serve static files (CSS, JS, images) from the 'public' directory
+app.use(express.static('public'));
+
 // Route to serve the login page
 app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/Login.html');
+    res.sendFile(__dirname + '/views/Login.html');
 });
 
 // Route to handle user registration form submission
