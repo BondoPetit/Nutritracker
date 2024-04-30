@@ -22,21 +22,24 @@
 
         <br><br><br><br>
         <div class="form-box">
-            <h1>My body</h1>
-            <form action="/register" method="post">
-                <div class="input-field">
-                    <label for="height">Height (cm):</label>
-                    <input type="text" id="height" name="height" required>
-                </div>
-                <div class="input-field">
-                    <label for="weight">Weight (kg):</label>
-                    <input type="text" id="weight" name="weight" required>
-                </div>
-                <button type="submit">Create user</button>
+            <h1>My Body</h1>
+            <form id="bodyDataForm" action="/submit-body-data" method="post">
+                <input type="hidden" id="userIDInput" name="userID" value="">
+                <label for="height">Height (cm):</label>
+                <input type="text" id="height" name="height" required><br>
+                <label for="weight">Weight (kg):</label>
+                <input type="text" id="weight" name="weight" required><br>
+                <button type="submit">Submit</button>
             </form>
+            
+            <script>
+                // Populate the userID input field with the userID value from the query string
+                const urlParams = new URLSearchParams(window.location.search);
+                const userID = urlParams.get('userID');
+                document.getElementById('userIDInput').value = userID;
+            </script>
+            
         </div>
-    </div>
-    </div>
     </div>
 </body>
 

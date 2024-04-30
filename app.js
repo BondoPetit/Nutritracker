@@ -30,6 +30,7 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/views/Login.html');
 });
 
+
 // Route for handling user registration
 app.post('/register', async (req, res) => {
     const { email, password } = req.body;
@@ -37,25 +38,18 @@ app.post('/register', async (req, res) => {
     try {
         const pool = await sql.connect(config);
 
-        // Check if user with the provided email already exists
-        const existingUser = await pool.request().query(`
-            SELECT * FROM Users
-            WHERE Email = '${email}'
+        // Insert new user into the database
+        const registrationResult = await pool.request().query(`
+            INSERT INTO Users (Email, Password)
+            OUTPUT inserted.UserID
+            VALUES ('${email}', '${password}')
         `);
 
-        if (existingUser.recordset.length > 0) {
-            res.json({ message: 'Brugeren eksisterer allerede.' });
-        } else {
-            // Insert new user into the database
-            await pool.request().query(`
-                INSERT INTO Users (Email, PasswordHash)
-                VALUES ('${email}', '${password}')
-            `);
+        const userID = registrationResult.recordset[0].UserID;
 
-            // Redirect to MyProfile.html upon successful registration
-            res.redirect('/MyProfile.html');
-        }
-
+        // Redirect to MyProfile.html upon successful registration
+        res.redirect(`/MyProfile.html?userID=${userID}`);
+        
         await sql.close();
     } catch (err) {
         console.error('Fejl under oprettelse af bruger:', err);
@@ -76,7 +70,7 @@ app.post('/login', async (req, res) => {
             .input('password', sql.NVarChar, password)
             .query(`
                 SELECT * FROM Users
-                WHERE Email = @email AND PasswordHash = @password
+                WHERE Email = @email AND Password = @password
             `);
 
         if (result.recordset.length > 0) {
@@ -96,3 +90,33 @@ app.post('/login', async (req, res) => {
 app.listen(port, () => {
     console.log(`Serveren kører på http://localhost:${port}`);
 });
+
+
+// Route for serving the MyBody page
+app.get('/MyProfile.html', (req, res) => {
+    res.sendFile(__dirname + '/views/MyProfile.html');
+});
+
+// Route for handling user body data submission
+app.post('/submit-body-data', async (req, res) => {
+    const { userID, height, weight } = req.body;
+
+    try {
+        const pool = await sql.connect(config);
+
+        // Insert height and weight data into UserDetails table
+        await pool.request().query(`
+            INSERT INTO UserDetails (UserID, Height, Weight)
+            VALUES (${userID}, ${height}, ${weight})
+        `);
+
+        // Redirect to MyProfile.html upon successful data submission
+        res.redirect(`/MyProfile.html?userID=${userID}`);
+
+        await sql.close();
+    } catch (err) {
+        console.error('Error submitting body data:', err);
+        res.status(500).json({ error: 'An error occurred while submitting body data.' });
+    }
+});
+
