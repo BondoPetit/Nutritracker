@@ -14,18 +14,30 @@ const config = {
     }
 };
 
+// Middleware for parsing URL-encoded bodies
 app.use(express.urlencoded({ extended: true }));
-app.use(express.json()); // Middleware for parsing JSON data
+// Middleware for parsing JSON bodies
+app.use(express.json());
 
+// Serve static files from the 'public' directory
+app.use(express.static('public'));
+
+// Serve static files from the 'views' directory
+app.use(express.static('views'));
+
+// Route for serving the Login page
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/views/Login.html');
 });
 
+// Route for handling user registration
 app.post('/register', async (req, res) => {
     const { email, password } = req.body;
 
     try {
         const pool = await sql.connect(config);
+
+        // Check if user with the provided email already exists
         const existingUser = await pool.request().query(`
             SELECT * FROM Users
             WHERE Email = '${email}'
@@ -34,12 +46,14 @@ app.post('/register', async (req, res) => {
         if (existingUser.recordset.length > 0) {
             res.json({ message: 'Brugeren eksisterer allerede.' });
         } else {
+            // Insert new user into the database
             await pool.request().query(`
                 INSERT INTO Users (Email, PasswordHash)
                 VALUES ('${email}', '${password}')
             `);
-    
-            res.json({ message: 'Bruger oprettet!' });
+
+            // Redirect to MyProfile.html upon successful registration
+            res.redirect('/MyProfile.html');
         }
 
         await sql.close();
@@ -49,11 +63,14 @@ app.post('/register', async (req, res) => {
     }
 });
 
+// Route for handling user login
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     try {
         const pool = await sql.connect(config);
+
+        // Check if user credentials are valid
         const result = await pool.request()
             .input('email', sql.NVarChar, email)
             .input('password', sql.NVarChar, password)
@@ -75,8 +92,7 @@ app.post('/login', async (req, res) => {
     }
 });
 
+// Start the server
 app.listen(port, () => {
     console.log(`Serveren kører på http://localhost:${port}`);
 });
-
-app.use(express.static('public'));
