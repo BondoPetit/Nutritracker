@@ -1,100 +1,82 @@
 const express = require('express');
 const sql = require('mssql');
-const app = express();
-const port = 3002;
 
-// Configuration for the server and database
+const app = express();
+const port = 3000;
+
 const config = {
-    server: 'nutritrackerserverexam.database.windows.net',
+    server: 'eksamensprojekt2024.database.windows.net',
     database: 'Login',
-    user: 'Bondo',
-    password: 'Pierre1969',
+    user: 'victoriapedersen',
+    password: 'Vict4298',
     options: {
         encrypt: true
     }
 };
 
-// Middleware to parse form submissions
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json()); // Middleware for parsing JSON data
 
-// Serve static files (CSS, JS, images) from the 'public' directory
-app.use(express.static('public'));
-
-// Route to serve the login page
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/views/Login.html');
 });
 
-// Route to handle user registration form submission
 app.post('/register', async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        // Connect to the database
         const pool = await sql.connect(config);
-
-        // Check if the user already exists
         const existingUser = await pool.request().query(`
-            SELECT * FROM users
+            SELECT * FROM Users
             WHERE Email = '${email}'
         `);
 
-        // Check if the user already exists
         if (existingUser.recordset.length > 0) {
-            res.send('Brugeren eksisterer allerede.');
+            res.json({ message: 'Brugeren eksisterer allerede.' });
         } else {
-            // Create a new user in the database
             await pool.request().query(`
-                INSERT INTO users (Email, Password)
+                INSERT INTO Users (Email, PasswordHash)
                 VALUES ('${email}', '${password}')
             `);
     
-            res.send('Bruger oprettet!');
+            res.json({ message: 'Bruger oprettet!' });
         }
 
-        // Close the database connection
-        await pool.close();
+        await sql.close();
     } catch (err) {
         console.error('Fejl under oprettelse af bruger:', err);
-        res.status(500).send('Der opstod en fejl under oprettelse af bruger.');
+        res.status(500).json({ error: 'Der opstod en fejl under oprettelse af bruger.' });
     }
 });
 
-// Route to handle user login
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        // Connect to the database
         const pool = await sql.connect(config);
-
-        // Check if the user exists and password matches
         const result = await pool.request()
             .input('email', sql.NVarChar, email)
             .input('password', sql.NVarChar, password)
             .query(`
-                SELECT * FROM users
-                WHERE Email = @email
-                AND Password = @password
+                SELECT * FROM Users
+                WHERE Email = @email AND PasswordHash = @password
             `);
 
-        // Check if a user with matching credentials was found
         if (result.recordset.length > 0) {
-            res.send('Velkommen ' + email + '! Du er logget ind.');
+            res.json({ message: 'Velkommen ' + email + '! Du er logget ind.' });
         } else {
-            res.send('Ingen bruger fundet med de angivne oplysninger.');
+            res.json({ message: 'Ingen bruger fundet med de angivne oplysninger.' });
         }
 
-        // Close the database connection
-        await pool.close();
+        await sql.close();
     } catch (err) {
         console.error('Fejl under login:', err);
-        res.status(500).send('Der opstod en fejl under login.');
+        res.status(500).json({ error: 'Der opstod en fejl under login.' });
     }
 });
 
-// Start the server
 app.listen(port, () => {
     console.log(`Serveren kører på http://localhost:${port}`);
 });
 
+app.use(express.static('public'));
