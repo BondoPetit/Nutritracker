@@ -1,5 +1,6 @@
 const express = require('express');
 const sql = require('mssql');
+const path = require('path');
 
 const app = express();
 const port = 3000;
@@ -20,16 +21,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // Serve static files from the 'public' directory
-app.use(express.static('public'));
-
-// Serve static files from the 'views' directory
-app.use(express.static('views'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Route for serving the Login page
 app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/views/Login.html');
+    res.sendFile(path.join(__dirname, 'views', 'Login.html'));
 });
-
 
 // Route for handling user registration
 app.post('/register', async (req, res) => {
@@ -40,10 +37,11 @@ app.post('/register', async (req, res) => {
 
         // Insert new user into the database
         const registrationResult = await pool.request().query(`
-        INSERT INTO Users (Email, PasswordHash)
-        OUTPUT inserted.UserID
-        VALUES ('${email}', '${password}')
-`);
+            INSERT INTO Users (Email, PasswordHash)
+            OUTPUT inserted.UserID
+            VALUES ('${email}', '${password}')
+        `);
+
         const userID = registrationResult.recordset[0].UserID;
 
         // Redirect to MyProfile.html upon successful registration
@@ -51,8 +49,8 @@ app.post('/register', async (req, res) => {
 
         await sql.close();
     } catch (err) {
-        console.error('Fejl under oprettelse af bruger:', err);
-        res.status(500).json({ error: 'Der opstod en fejl under oprettelse af bruger.' });
+        console.error('Error registering user:', err);
+        res.status(500).json({ error: 'An error occurred while registering user.' });
     }
 });
 
@@ -67,33 +65,30 @@ app.post('/login', async (req, res) => {
         const result = await pool.request()
             .input('email', sql.NVarChar, email)
             .input('password', sql.NVarChar, password)
-            .query(`SELECT * FROM Users WHERE Email = @email AND PasswordHash = @password`);
+            .query(`
+                SELECT UserID
+                FROM Users
+                WHERE Email = @email AND PasswordHash = @password
+            `);
 
         if (result.recordset.length > 0) {
             const userID = result.recordset[0].UserID;
             // Redirect to MealCreator.html upon successful login
             res.redirect(`/MealCreator.html?userID=${userID}`);
         } else {
-            res.status(401).json({ message: 'Ingen bruger fundet med de angivne oplysninger.' });
+            res.status(401).json({ message: 'Invalid credentials.' });
         }
 
         await sql.close();
     } catch (err) {
-        console.error('Fejl under login:', err);
-        res.status(500).json({ error: 'Der opstod en fejl under login.' });
+        console.error('Error logging in:', err);
+        res.status(500).json({ error: 'An error occurred while logging in.' });
     }
 });
 
-
-// Start the server
-app.listen(port, () => {
-    console.log(`Serveren kører på http://localhost:${port}`);
-});
-
-
-// Route for serving the MyBody page
+// Route for serving the MyProfile page
 app.get('/MyProfile.html', (req, res) => {
-    res.sendFile(__dirname + '/views/MyProfile.html');
+    res.sendFile(path.join(__dirname, 'views', 'MyProfile.html'));
 });
 
 // Route for handling user body data submission
@@ -109,7 +104,7 @@ app.post('/submit-body-data', async (req, res) => {
             VALUES (${userID}, ${height}, ${weight})
         `);
 
-        // Redirect to MealCreator.html upon successful data submission
+        // Redirect to MyProfile.html upon successful data submission
         res.redirect(`/MealCreator.html?userID=${userID}`);
 
         await sql.close();
@@ -138,7 +133,7 @@ app.get('/MyStats.html', async (req, res) => {
 
         if (result.recordset.length > 0) {
             const userData = result.recordset[0];
-            res.render('MyStats', { userData }); // Render MyStats.html with userData
+            res.sendFile(path.join(__dirname, 'views', 'MyStats.html')); // Send MyStats.html file
         } else {
             res.status(404).send('User not found');
         }
@@ -148,4 +143,9 @@ app.get('/MyStats.html', async (req, res) => {
         console.error('Error fetching user details:', err);
         res.status(500).send('An error occurred while fetching user details');
     }
+});
+
+// Start the server
+app.listen(port, () => {
+    console.log(`Server is running on http://localhost:${port}`);
 });
