@@ -69,11 +69,12 @@ app.post('/login', async (req, res) => {
             .input('password', sql.NVarChar, password)
             .query(`SELECT * FROM Users WHERE Email = @email AND PasswordHash = @password`);
 
-
         if (result.recordset.length > 0) {
-            res.json({ message: 'Velkommen ' + email + '! Du er logget ind.' });
+            const userID = result.recordset[0].UserID;
+            // Redirect to MealCreator.html upon successful login
+            res.redirect(`/MealCreator.html?userID=${userID}`);
         } else {
-            res.json({ message: 'Ingen bruger fundet med de angivne oplysninger.' });
+            res.status(401).json({ message: 'Ingen bruger fundet med de angivne oplysninger.' });
         }
 
         await sql.close();
@@ -82,6 +83,7 @@ app.post('/login', async (req, res) => {
         res.status(500).json({ error: 'Der opstod en fejl under login.' });
     }
 });
+
 
 // Start the server
 app.listen(port, () => {
@@ -107,8 +109,8 @@ app.post('/submit-body-data', async (req, res) => {
             VALUES (${userID}, ${height}, ${weight})
         `);
 
-        // Redirect to MyProfile.html upon successful data submission
-        res.redirect(`/MyProfile.html?userID=${userID}`);
+        // Redirect to MealCreator.html upon successful data submission
+        res.redirect(`/MealCreator.html?userID=${userID}`);
 
         await sql.close();
     } catch (err) {
@@ -117,3 +119,33 @@ app.post('/submit-body-data', async (req, res) => {
     }
 });
 
+// Route for serving the MyStats page
+app.get('/MyStats.html', async (req, res) => {
+    const userID = req.query.userID; // Assuming userID is passed as a query parameter
+
+    try {
+        const pool = await sql.connect(config);
+
+        // Fetch user's details from the database
+        const result = await pool.request()
+            .input('userID', sql.Int, userID)
+            .query(`
+                SELECT Email, Height, Weight
+                FROM Users
+                INNER JOIN UserDetails ON Users.UserID = UserDetails.UserID
+                WHERE Users.UserID = @userID
+            `);
+
+        if (result.recordset.length > 0) {
+            const userData = result.recordset[0];
+            res.render('MyStats', { userData }); // Render MyStats.html with userData
+        } else {
+            res.status(404).send('User not found');
+        }
+
+        await sql.close();
+    } catch (err) {
+        console.error('Error fetching user details:', err);
+        res.status(500).send('An error occurred while fetching user details');
+    }
+});
