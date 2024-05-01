@@ -40,16 +40,15 @@ app.post('/register', async (req, res) => {
 
         // Insert new user into the database
         const registrationResult = await pool.request().query(`
-            INSERT INTO Users (Email, Password)
-            OUTPUT inserted.UserID
-            VALUES ('${email}', '${password}')
-        `);
-
+        INSERT INTO Users (Email, PasswordHash)
+        OUTPUT inserted.UserID
+        VALUES ('${email}', '${password}')
+`);
         const userID = registrationResult.recordset[0].UserID;
 
         // Redirect to MyProfile.html upon successful registration
         res.redirect(`/MyProfile.html?userID=${userID}`);
-        
+
         await sql.close();
     } catch (err) {
         console.error('Fejl under oprettelse af bruger:', err);
@@ -68,10 +67,8 @@ app.post('/login', async (req, res) => {
         const result = await pool.request()
             .input('email', sql.NVarChar, email)
             .input('password', sql.NVarChar, password)
-            .query(`
-                SELECT * FROM Users
-                WHERE Email = @email AND Password = @password
-            `);
+            .query(`SELECT * FROM Users WHERE Email = @email AND PasswordHash = @password`);
+
 
         if (result.recordset.length > 0) {
             res.json({ message: 'Velkommen ' + email + '! Du er logget ind.' });
