@@ -104,7 +104,7 @@ app.post('/submit-body-data', async (req, res) => {
             VALUES (${userID}, ${height}, ${weight})
         `);
 
-        // Redirect to MyProfile.html upon successful data submission
+        // Redirect to MealCreator.html upon successful data submission
         res.redirect(`/MealCreator.html?userID=${userID}`);
 
         await sql.close();
@@ -143,6 +143,11 @@ app.get('/MyStats.html', async (req, res) => {
         console.error('Error fetching user details:', err);
         res.status(500).send('An error occurred while fetching user details');
     }
+});
+
+// Route for serving MealCreator.html
+app.get('/MealCreator.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'MealCreator.html'));
 });
 
 // Start the server

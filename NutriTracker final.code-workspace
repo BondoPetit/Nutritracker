@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../sql-user-page"
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "NutriTracker final"
+	}
+}
