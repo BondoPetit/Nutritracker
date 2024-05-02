@@ -56,15 +56,15 @@ app.post('/register', async (req, res) => {
 
 // Route to update user data
 app.post('/updateUserData', async (req, res) => {
-    const { userID, email, height, weight } = req.body;
+    const { userID, email, height, weight, age } = req.body;
 
     try {
         const pool = await sql.connect(config);
 
-        // Update user's data (Email, Height, Weight) based on userID
+        // Update user's data (Email, Height, Weight, Age) based on userID
         await pool.request().query(`
             UPDATE UserDetails
-            SET Height = ${height}, Weight = ${weight}
+            SET Height = ${height}, Weight = ${weight}, Age = ${age}
             WHERE UserID = ${userID}
         `);
 
@@ -117,15 +117,15 @@ app.get('/MyProfile.html', (req, res) => {
 
 // Route for handling user body data submission
 app.post('/submit-body-data', async (req, res) => {
-    const { userID, height, weight } = req.body;
+    const { userID, height, weight, age } = req.body;
 
     try {
         const pool = await sql.connect(config);
 
-        // Insert height and weight data into UserDetails table
+        // Insert height, weight, and age data into UserDetails table
         await pool.request().query(`
-            INSERT INTO UserDetails (UserID, Height, Weight)
-            VALUES (${userID}, ${height}, ${weight})
+            INSERT INTO UserDetails (UserID, Height, Weight, Age)
+            VALUES (${userID}, ${height}, ${weight}, ${age})
         `);
 
         // Redirect to MealCreator.html upon successful data submission
@@ -138,6 +138,7 @@ app.post('/submit-body-data', async (req, res) => {
     }
 });
 
+
 // Route for serving MyStats page
 app.get('/MyStats.html', async (req, res) => {
     const userID = req.query.userID;
@@ -145,11 +146,11 @@ app.get('/MyStats.html', async (req, res) => {
     try {
         const pool = await sql.connect(config);
 
-        // Fetch user's data (Email, Height, Weight) based on userID
+        // Fetch user's data (Email, Height, Weight, Age) based on userID
         const result = await pool.request()
             .input('userID', sql.Int, userID)
             .query(`
-                SELECT Email, Height, Weight
+                SELECT Email, Height, Weight, Age
                 FROM Users
                 INNER JOIN UserDetails ON Users.UserID = UserDetails.UserID
                 WHERE Users.UserID = @userID
@@ -184,7 +185,7 @@ app.get('/getUserData', async (req, res) => {
         const result = await pool.request()
             .input('userID', sql.Int, userID)
             .query(`
-                SELECT Email, Height, Weight
+                SELECT Email, Height, Weight, Age
                 FROM Users
                 INNER JOIN UserDetails ON Users.UserID = UserDetails.UserID
                 WHERE Users.UserID = @userID
@@ -203,6 +204,36 @@ app.get('/getUserData', async (req, res) => {
         res.status(500).send('An error occurred while fetching user data');
     }
 });
+
+// Route to delete user account and associated data
+app.delete('/deleteUser', async (req, res) => {
+    const { userID } = req.query;
+
+    try {
+        const pool = await sql.connect(config);
+
+        // Delete user from UserDetails table
+        await pool.request().query(`
+            DELETE FROM UserDetails
+            WHERE UserID = ${userID}
+        `);
+
+        // Delete user from Users table
+        await pool.request().query(`
+            DELETE FROM Users
+            WHERE UserID = ${userID}
+        `);
+
+        res.sendStatus(200); // Send success response after deletion
+
+        await sql.close();
+    } catch (err) {
+        console.error('Error deleting user:', err);
+        res.status(500).send('Failed to delete user');
+    }
+});
+
+
 
 // Route for serving MealCreator.html
 app.get('/MealCreator.html', (req, res) => {
