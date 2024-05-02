@@ -1,16 +1,16 @@
-// scriptStats.js
-
 document.addEventListener('DOMContentLoaded', async () => {
-    const userID = getUserIdFromQueryString(); // Extract userID from the URL query string
-    if (userID) {
-        try {
-            const userData = await fetchUserData(userID); // Fetch user data using userID
-            displayUserData(userData); // Display fetched user data on the page
-        } catch (err) {
-            console.error('Error fetching user data:', err);
+    const userID = getUserIdFromQueryString(); // Extract userID from URL
+
+    try {
+        const response = await fetch(`/getUserData?userID=${userID}`);
+        if (response.ok) {
+            const userData = await response.json();
+            displayUserData(userData); // Display user data in the HTML elements
+        } else {
+            console.error('Failed to fetch user data');
         }
-    } else {
-        console.error('UserID not found in the query string');
+    } catch (err) {
+        console.error('Error fetching user data:', err);
     }
 });
 
@@ -19,16 +19,40 @@ function getUserIdFromQueryString() {
     return urlParams.get('userID');
 }
 
-async function fetchUserData(userID) {
-    const response = await fetch(`/getUserData?userID=${userID}`);
-    if (!response.ok) {
-        throw new Error('Failed to fetch user data');
-    }
-    return response.json(); // Return parsed JSON response containing user data
-}
-
 function displayUserData(userData) {
     document.getElementById('email').innerText = userData.Email;
     document.getElementById('height').innerText = userData.Height;
     document.getElementById('weight').innerText = userData.Weight;
+
+    // Populate input fields for editing
+    document.getElementById('editEmail').value = userData.Email;
+    document.getElementById('editHeight').value = userData.Height;
+    document.getElementById('editWeight').value = userData.Weight;
+}
+
+async function submitUserData() {
+    const userID = getUserIdFromQueryString();
+    const email = document.getElementById('editEmail').value;
+    const height = document.getElementById('editHeight').value;
+    const weight = document.getElementById('editWeight').value;
+
+    try {
+        const response = await fetch('/updateUserData', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ userID, email, height, weight })
+        });
+
+        if (response.ok) {
+            alert('User data updated successfully');
+            // Optionally redirect or refresh the page after successful update
+        } else {
+            throw new Error('Failed to update user data');
+        }
+    } catch (err) {
+        console.error('Error updating user data:', err);
+        alert('Failed to update user data. Please try again.');
+    }
 }

@@ -54,6 +54,38 @@ app.post('/register', async (req, res) => {
     }
 });
 
+// Route for updating user data
+app.post('/updateUserData', async (req, res) => {
+    const { userID, email, height, weight } = req.body;
+
+    try {
+        const pool = await sql.connect(config);
+
+        // Update user's data (Email, Height, Weight) based on userID
+        await pool.request()
+            .input('email', sql.NVarChar, email)
+            .input('height', sql.Int, height)
+            .input('weight', sql.Float, weight)
+            .input('userID', sql.Int, userID)
+            .query(`
+                UPDATE Users
+                SET Email = @email
+                WHERE UserID = @userID;
+
+                UPDATE UserDetails
+                SET Height = @height, Weight = @weight
+                WHERE UserID = @userID;
+            `);
+
+        res.status(200).send('User data updated successfully');
+        await sql.close();
+    } catch (err) {
+        console.error('Error updating user data:', err);
+        res.status(500).send('Failed to update user data');
+    }
+});
+
+
 // Route for handling user login
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
@@ -115,9 +147,39 @@ app.post('/submit-body-data', async (req, res) => {
 });
 
 // Route for serving MyStats page
-app.get('/MyStats.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'MyStats.html'));
+app.get('/MyStats.html', async (req, res) => {
+    const userID = req.query.userID;
+
+    try {
+        const pool = await sql.connect(config);
+
+        // Fetch user's data (Email, Height, Weight) based on userID
+        const result = await pool.request()
+            .input('userID', sql.Int, userID)
+            .query(`
+                SELECT Email, Height, Weight
+                FROM Users
+                INNER JOIN UserDetails ON Users.UserID = UserDetails.UserID
+                WHERE Users.UserID = @userID
+            `);
+
+        if (result.recordset.length > 0) {
+            const userData = result.recordset[0];
+            // Send MyStats.html as response
+            const filePath = path.join(__dirname, 'views', 'MyStats.html');
+            res.sendFile(filePath);
+        } else {
+            res.status(404).send('User not found');
+        }
+
+        await sql.close();
+    } catch (err) {
+        console.error('Error fetching user data:', err);
+        res.status(500).send('An error occurred while fetching user data');
+    }
 });
+
+
 
 // Route to fetch user data based on userID
 app.get('/getUserData', async (req, res) => {

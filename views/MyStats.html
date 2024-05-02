@@ -24,9 +24,17 @@
         </div>
 
         <h1>My Stats</h1>
+        <!-- Display user data -->
         <p><strong>Email:</strong> <span id="email"></span></p>
         <p><strong>Height (cm):</strong> <span id="height"></span></p>
         <p><strong>Weight (kg):</strong> <span id="weight"></span></p>
+
+        <!-- Input fields for editing -->
+        <input type="text" id="editEmail" placeholder="Enter new email">
+        <input type="number" id="editHeight" placeholder="Enter new height">
+        <input type="number" id="editWeight" placeholder="Enter new weight">
+        <button onclick="submitUserData()">Save Changes</button>
+
     </div>
 
     <script type="module" src="/js/scriptNav.js"></script>
