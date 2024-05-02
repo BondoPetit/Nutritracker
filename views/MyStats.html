@@ -1,15 +1,36 @@
 <!DOCTYPE html>
 <html>
+
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/styleMyStats.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css">
     <title>My Stats</title>
 </head>
-<body>
-    <h1>My Stats</h1>
-    <p><strong>Email:</strong> <span id="email"></span></p>
-    <p><strong>Height (cm):</strong> <span id="height"></span></p>
-    <p><strong>Weight (kg):</strong> <span id="weight"></span></p>
 
-    <!-- Include external JavaScript file -->
+<body>
+    <img src="/nav.jpg" alt="navPic" class="background-image">
+    <div class="content">
+        <div class="nav-field">
+            <h1 class="logo">NutriTracker</h1>
+            <h3><a href="/MealCreator.html">Meal Creator</a></h3>
+            <h3><a href="/MealTracker.html">Meal Tracker</a></h3>
+            <h3><a href="/Activity.html">Activity Tracker</a></h3>
+            <h3><a href="/DailyNutri.html">Daily Nutri</a></h3>
+            <h3><a href="/MyStats.html" class="active">Stats</a></h3>
+        </div>
+
+        <h1>My Stats</h1>
+        <p><strong>Email:</strong> <span id="email"></span></p>
+        <p><strong>Height (cm):</strong> <span id="height"></span></p>
+        <p><strong>Weight (kg):</strong> <span id="weight"></span></p>
+    </div>
+
+    <script type="module" src="/js/scriptNav.js"></script>
     <script src="/js/scriptStats.js"></script>
 </body>
+
 </html>

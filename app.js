@@ -86,7 +86,7 @@ app.post('/login', async (req, res) => {
     }
 });
 
-// Route for serving the MyProfile page
+// Route for serving MyProfile page
 app.get('/MyProfile.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'MyProfile.html'));
 });
@@ -114,14 +114,19 @@ app.post('/submit-body-data', async (req, res) => {
     }
 });
 
-// Route for serving the MyStats page
-app.get('/MyStats.html', async (req, res) => {
-    const userID = req.query.userID; // Assuming userID is passed as a query parameter
+// Route for serving MyStats page
+app.get('/MyStats.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'MyStats.html'));
+});
+
+// Route to fetch user data based on userID
+app.get('/getUserData', async (req, res) => {
+    const userID = req.query.userID;
 
     try {
         const pool = await sql.connect(config);
 
-        // Fetch user's details from the database
+        // Fetch user's data (Email, Height, Weight) based on userID
         const result = await pool.request()
             .input('userID', sql.Int, userID)
             .query(`
@@ -133,21 +138,36 @@ app.get('/MyStats.html', async (req, res) => {
 
         if (result.recordset.length > 0) {
             const userData = result.recordset[0];
-            res.sendFile(path.join(__dirname, 'views', 'MyStats.html')); // Send MyStats.html file
+            res.json(userData); // Send user data as JSON response
         } else {
             res.status(404).send('User not found');
         }
 
         await sql.close();
     } catch (err) {
-        console.error('Error fetching user details:', err);
-        res.status(500).send('An error occurred while fetching user details');
+        console.error('Error fetching user data:', err);
+        res.status(500).send('An error occurred while fetching user data');
     }
 });
 
 // Route for serving MealCreator.html
 app.get('/MealCreator.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'MealCreator.html'));
+});
+
+// Route for serving MealTracker.html
+app.get('/MealTracker.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'MealTracker.html'));
+});
+
+// Route for serving Activity.html
+app.get('/Activity.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'Activity.html'));
+});
+
+// Route for serving DailyNutri.html
+app.get('/DailyNutri.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'DailyNutri.html'));
 });
 
 // Start the server
