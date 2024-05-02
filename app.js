@@ -54,7 +54,7 @@ app.post('/register', async (req, res) => {
     }
 });
 
-// Route for updating user data
+// Route to update user data
 app.post('/updateUserData', async (req, res) => {
     const { userID, email, height, weight } = req.body;
 
@@ -62,20 +62,11 @@ app.post('/updateUserData', async (req, res) => {
         const pool = await sql.connect(config);
 
         // Update user's data (Email, Height, Weight) based on userID
-        await pool.request()
-            .input('email', sql.NVarChar, email)
-            .input('height', sql.Int, height)
-            .input('weight', sql.Float, weight)
-            .input('userID', sql.Int, userID)
-            .query(`
-                UPDATE Users
-                SET Email = @email
-                WHERE UserID = @userID;
-
-                UPDATE UserDetails
-                SET Height = @height, Weight = @weight
-                WHERE UserID = @userID;
-            `);
+        await pool.request().query(`
+            UPDATE UserDetails
+            SET Height = ${height}, Weight = ${weight}
+            WHERE UserID = ${userID}
+        `);
 
         res.status(200).send('User data updated successfully');
         await sql.close();
@@ -84,6 +75,7 @@ app.post('/updateUserData', async (req, res) => {
         res.status(500).send('Failed to update user data');
     }
 });
+
 
 
 // Route for handling user login

@@ -1,11 +1,19 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    const userID = getUserIdFromQueryString(); // Extract userID from URL
+    const userID = getUserIdFromQueryString();
 
     try {
         const response = await fetch(`/getUserData?userID=${userID}`);
         if (response.ok) {
             const userData = await response.json();
-            displayUserData(userData); // Display user data in the HTML elements
+            displayUserData(userData);
+
+            // Add event listeners for inline editing
+            const editableFields = document.querySelectorAll('[contenteditable="true"]');
+            editableFields.forEach(field => {
+                field.addEventListener('blur', () => {
+                    submitUserData(userID); // Submit data on blur (when editing is finished)
+                });
+            });
         } else {
             console.error('Failed to fetch user data');
         }
@@ -23,18 +31,12 @@ function displayUserData(userData) {
     document.getElementById('email').innerText = userData.Email;
     document.getElementById('height').innerText = userData.Height;
     document.getElementById('weight').innerText = userData.Weight;
-
-    // Populate input fields for editing
-    document.getElementById('editEmail').value = userData.Email;
-    document.getElementById('editHeight').value = userData.Height;
-    document.getElementById('editWeight').value = userData.Weight;
 }
 
-async function submitUserData() {
-    const userID = getUserIdFromQueryString();
-    const email = document.getElementById('editEmail').value;
-    const height = document.getElementById('editHeight').value;
-    const weight = document.getElementById('editWeight').value;
+async function submitUserData(userID) {
+    const email = document.getElementById('email').innerText;
+    const height = document.getElementById('height').innerText;
+    const weight = document.getElementById('weight').innerText;
 
     try {
         const response = await fetch('/updateUserData', {
@@ -46,13 +48,11 @@ async function submitUserData() {
         });
 
         if (response.ok) {
-            alert('User data updated successfully');
-            // Optionally redirect or refresh the page after successful update
+            console.log('User data updated successfully');
         } else {
-            throw new Error('Failed to update user data');
+            console.error('Failed to update user data');
         }
     } catch (err) {
         console.error('Error updating user data:', err);
-        alert('Failed to update user data. Please try again.');
     }
 }
