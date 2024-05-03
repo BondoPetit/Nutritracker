@@ -25,6 +25,7 @@ function displayUserData(userData) {
         document.getElementById('height').innerText = userData.Height || '';
         document.getElementById('weight').innerText = userData.Weight || '';
         document.getElementById('age').innerText = userData.Age || '';
+        document.getElementById('gender').innerText = userData.Gender || '';
         
         // Add event listeners for inline editing
         const editableFields = document.querySelectorAll('[contenteditable="true"]');
@@ -55,7 +56,8 @@ async function submitUserData() {
     const email = document.getElementById('email').innerText;
     const height = document.getElementById('height').innerText;
     const weight = document.getElementById('weight').innerText;
-    const age = document.getElementById('age').innerText; // Get age
+    const age = document.getElementById('age').innerText;
+    const gender = document.getElementById('gender').innerText; // Get gender
 
     try {
         const response = await fetch('/updateUserData', {
@@ -63,7 +65,7 @@ async function submitUserData() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ userID, email, height, weight, age })
+            body: JSON.stringify({ userID, email, height, weight, age, gender })
         });
 
         if (response.ok) {
@@ -75,6 +77,7 @@ async function submitUserData() {
         console.error('Error updating user data:', err);
     }
 }
+
 
 async function deleteUser() {
     const userID = getUserIdFromQueryString();

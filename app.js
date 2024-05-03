@@ -56,15 +56,29 @@ app.post('/register', async (req, res) => {
 
 // Route to update user data
 app.post('/updateUserData', async (req, res) => {
-    const { userID, email, height, weight, age } = req.body;
+    const { userID, height, weight, age, gender } = req.body;
 
     try {
         const pool = await sql.connect(config);
 
-        // Update user's data (Email, Height, Weight, Age) based on userID
+        // Fetch UserID from Users table based on provided userID
+        const userResult = await pool.request()
+            .input('userID', sql.Int, userID)
+            .query(`
+                SELECT UserID
+                FROM Users
+                WHERE UserID = @userID
+            `);
+
+        if (userResult.recordset.length === 0) {
+            res.status(404).send('User not found');
+            return;
+        }
+
+        // Update user's data (Height, Weight, Age, Gender) in UserDetails table
         await pool.request().query(`
             UPDATE UserDetails
-            SET Height = ${height}, Weight = ${weight}, Age = ${age}
+            SET Height = ${height}, Weight = ${weight}, Age = ${age}, Gender = '${gender}'
             WHERE UserID = ${userID}
         `);
 
@@ -75,6 +89,7 @@ app.post('/updateUserData', async (req, res) => {
         res.status(500).send('Failed to update user data');
     }
 });
+
 
 
 
@@ -117,15 +132,15 @@ app.get('/MyProfile.html', (req, res) => {
 
 // Route for handling user body data submission
 app.post('/submit-body-data', async (req, res) => {
-    const { userID, height, weight, age } = req.body;
+    const { userID, height, weight, age, gender } = req.body;
 
     try {
         const pool = await sql.connect(config);
 
-        // Insert height, weight, and age data into UserDetails table
+        // Insert height, weight, age, and gender data into UserDetails table
         await pool.request().query(`
-            INSERT INTO UserDetails (UserID, Height, Weight, Age)
-            VALUES (${userID}, ${height}, ${weight}, ${age})
+            INSERT INTO UserDetails (UserID, Height, Weight, Age, Gender)
+            VALUES (${userID}, ${height}, ${weight}, ${age}, '${gender}')
         `);
 
         // Redirect to MealCreator.html upon successful data submission
@@ -139,6 +154,7 @@ app.post('/submit-body-data', async (req, res) => {
 });
 
 
+
 // Route for serving MyStats page
 app.get('/MyStats.html', async (req, res) => {
     const userID = req.query.userID;
@@ -146,11 +162,11 @@ app.get('/MyStats.html', async (req, res) => {
     try {
         const pool = await sql.connect(config);
 
-        // Fetch user's data (Email, Height, Weight, Age) based on userID
+        // Fetch user's data (Email, Height, Weight, Age, Gender) based on userID
         const result = await pool.request()
             .input('userID', sql.Int, userID)
             .query(`
-                SELECT Email, Height, Weight, Age
+                SELECT Email, Height, Weight, Age, Gender
                 FROM Users
                 INNER JOIN UserDetails ON Users.UserID = UserDetails.UserID
                 WHERE Users.UserID = @userID
@@ -181,11 +197,11 @@ app.get('/getUserData', async (req, res) => {
     try {
         const pool = await sql.connect(config);
 
-        // Fetch user's data (Email, Height, Weight) based on userID
+        // Fetch user's data (Email, Height, Weight, Age, Gender) based on userID
         const result = await pool.request()
             .input('userID', sql.Int, userID)
             .query(`
-                SELECT Email, Height, Weight, Age
+                SELECT Email, Height, Weight, Age, Gender
                 FROM Users
                 INNER JOIN UserDetails ON Users.UserID = UserDetails.UserID
                 WHERE Users.UserID = @userID

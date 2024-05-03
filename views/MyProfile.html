@@ -31,18 +31,18 @@
                 <input type="text" id="weight" name="weight" required><br>
                 <label for="age">Age:</label>
                 <input type="text" id="age" name="age" required><br> <!-- Add input for Age -->
+                <label for="gender">Gender:</label>
+                <select id="gender" name="gender" required>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                </select><br>
                 <button type="submit">Submit</button>
             </form>
             
-            <script>
-                // Populate the userID input field with the userID value from the query string
-                const urlParams = new URLSearchParams(window.location.search);
-                const userID = urlParams.get('userID');
-                document.getElementById('userIDInput').value = userID;
-            </script>
-            
         </div>
     </div>
+    <script type="module" src="/js/scriptProfile.js"></script>
 </body>
 
 </html>
