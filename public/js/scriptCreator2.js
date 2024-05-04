@@ -1,18 +1,18 @@
-// Meal Creator with Improved Handling
-const apiKey = '154093';
-let meals = JSON.parse(localStorage.getItem('meals')) || [];
-let mealCounter = meals.length > 0 ? Math.max(...meals.map(meal => meal.id)) + 1 : 1;
+// Meal Creator with Updated Backend Integration
+let meals = [];
+let mealCounter = 1;
 let currentMealId = null;
-let tempIngredients = []; // Temporary storage for ingredients before a meal is saved
+let tempIngredients = [];
 
-// Helper function for API requests with apiKey
-function fetchWithApiKey(url, options = {}) {
-    const defaultOptions = {
-        method: 'GET',
-        headers: { 'X-API-Key': apiKey }
-    };
-    return fetch(url, { ...defaultOptions, ...options })
-        .then(response => response.ok ? response.json() : Promise.reject(`Error: ${response.status}`));
+// Fetch meals from the server
+async function fetchMeals() {
+    try {
+        const response = await fetch('/api/meals');
+        meals = await response.json();
+        updateMealDisplay();
+    } catch (err) {
+        console.error('Error fetching meals:', err);
+    }
 }
 
 // Open Meal Popup for adding or editing a meal
@@ -24,19 +24,12 @@ function openMealPopup(mealId = null) {
 
     if (mealPopup && mealNameInput && ingredientsContainer) {
         mealPopup.style.display = "block";
-        if (ingredientsContainer) {
-            ingredientsContainer.innerHTML = '';
-        }
+        ingredientsContainer.innerHTML = '';
 
         if (mealId !== null) {
-            // If editing an existing meal, populate the meal popup with the existing meal information
             const mealToEdit = meals.find(meal => meal.id === mealId);
             mealNameInput.value = mealToEdit.name;
-
-            // Clear existing ingredients
-            tempIngredients = [...mealToEdit.ingredients]; // Ensure tempIngredients is initialized with existing ingredients
-
-            // Populate ingredients
+            tempIngredients = [...mealToEdit.ingredients];
             tempIngredients.forEach(ingredient => {
                 const inputContainer = document.createElement('div');
                 const nameSpan = document.createElement('span');
@@ -46,24 +39,20 @@ function openMealPopup(mealId = null) {
                 weightInput.setAttribute('placeholder', 'Weight in grams');
                 weightInput.className = 'ingredient-weight-input';
                 weightInput.value = ingredient.weight;
-                weightInput.addEventListener('input', () => updateIngredientWeight(mealId, ingredient.id, weightInput.value)); // Add event listener to update weight
                 const deleteBtn = document.createElement('button');
                 deleteBtn.textContent = 'Delete';
-                deleteBtn.className = 'delete-btn'; // Add a class name for event delegation
-                deleteBtn.dataset.ingredientId = ingredient.id; // Set data attribute for ingredient ID
-                deleteBtn.addEventListener('click', () => deleteIngredient(mealId, ingredient.id)); // Add event listener to delete ingredient
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.dataset.ingredientId = ingredient.id;
                 inputContainer.appendChild(nameSpan);
                 inputContainer.appendChild(weightInput);
                 inputContainer.appendChild(deleteBtn);
                 ingredientsContainer.appendChild(inputContainer);
             });
         } else {
-            // Clear the meal popup fields for adding a new meal
             mealNameInput.value = '';
-            tempIngredients = []; // Clear temporary ingredients when adding a new meal
+            tempIngredients = [];
         }
 
-        // Set up event listener for the search button in the meal modal
         const searchButton = document.getElementById('searchButton');
         if (searchButton) {
             searchButton.addEventListener('click', function () {
@@ -76,7 +65,6 @@ function openMealPopup(mealId = null) {
             });
         }
 
-        // Attach event listener for delete buttons using event delegation
         ingredientsContainer.addEventListener('click', function (event) {
             if (event.target.classList.contains('delete-btn')) {
                 const ingredientId = event.target.dataset.ingredientId;
@@ -88,37 +76,16 @@ function openMealPopup(mealId = null) {
     }
 }
 
-// Set up event listeners for opening the meal popup when clicking the pen icon
-const editMealIcons = document.querySelectorAll('.edit-button');
-editMealIcons.forEach(icon => {
-    const mealId = parseInt(icon.closest('.meal').id.split('-')[1]);
-    if (icon) {
-        icon.addEventListener('click', () => {
-            openMealPopup(mealId);
-        });
-    } else {
-        console.error("Failed to find edit icon for setting up event listener");
-    }
-});
-
+// Close the meal popup
 function closeMealPopup() {
-    document.getElementById("mealPopUp").style.display = "none";
-    clearMealCreatorSearchResults(); // Clear search results for meal creator
-    clearDisplayedResults()
+    const mealPopup = document.getElementById("mealPopUp");
+    if (mealPopup) {
+        mealPopup.style.display = "none";
+    }
 }
 
-function clearMealCreatorSearchResults() {
-    const container = document.getElementById("searchResultsContainer");
-    container.innerHTML = ''; // Clear search results
-}
-
-function clearDisplayedResults() {
-    const resultsContainer = document.getElementById("searchResultsContainerAll");
-    resultsContainer.innerHTML = ''; // Clear displayed results
-}
-
-// saves meal and calculates nutrition
-function saveMeal() {
+// Save meal
+async function saveMeal() {
     const mealNameInput = document.getElementById("mealName");
     const mealName = mealNameInput.value.trim();
     if (mealName === "") {
@@ -126,393 +93,135 @@ function saveMeal() {
         return;
     }
 
-    // Start of nutritional data and total weight calculation
-    let totalCalories = 0, totalProtein = 0, totalFats = 0, totalFiber = 0, totalWeight = 0;
-
+    let totalCalories = 0, totalProtein = 0, totalCarbs = 0, totalFat = 0;
     tempIngredients.forEach(ingredient => {
-        totalCalories += ingredient.nutritionalContent.calories * (ingredient.weight / 100);
-        totalProtein += ingredient.nutritionalContent.protein * (ingredient.weight / 100);
-        totalFats += ingredient.nutritionalContent.fats * (ingredient.weight / 100);
-        totalFiber += ingredient.nutritionalContent.fiber * (ingredient.weight / 100);
-        totalWeight += ingredient.weight; // Add the weight of each ingredient to the total weight
+        totalCalories += ingredient.nutritionalContent.calories;
+        totalProtein += ingredient.nutritionalContent.protein;
+        totalCarbs += ingredient.nutritionalContent.carbs;
+        totalFat += ingredient.nutritionalContent.fat;
     });
 
-    const nutritionalData = {
+    const newMeal = {
+        id: mealCounter++,
+        name: mealName,
+        ingredients: [...tempIngredients],
         calories: totalCalories.toFixed(2),
         protein: totalProtein.toFixed(2),
-        fats: totalFats.toFixed(2),
-        fiber: totalFiber.toFixed(2),
-        totalWeight: totalWeight.toFixed(2) // Include the total weight of the meal
+        carbs: totalCarbs.toFixed(2),
+        fat: totalFat.toFixed(2),
+        creationDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
     };
 
-    if (currentMealId !== null) {
-        const mealIndex = meals.findIndex(meal => meal.id === currentMealId);
-        if (mealIndex !== -1) {
-            meals[mealIndex].name = mealName;
-            meals[mealIndex].ingredients = [...tempIngredients];
-            meals[mealIndex].nutritionalData = nutritionalData;
-
-            // Send updated meal data to the server
-            updateMealInDatabase(meals[mealIndex]);
+    try {
+        const response = await fetch(`/api/meals/${currentMealId || ''}`, {
+            method: currentMealId !== null ? 'PUT' : 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newMeal)
+        });
+        const result = await response.json();
+        if (response.ok) {
+            if (currentMealId === null) {
+                newMeal.id = result.mealID;
+                meals.push(newMeal);
+            } else {
+                const mealIndex = meals.findIndex(meal => meal.id === currentMealId);
+                meals[mealIndex] = newMeal;
+            }
+            updateMealDisplay();
+            closeMealPopup();
+        } else {
+            console.error('Error saving meal:', result.error);
         }
-    } else {
-        // Get the current date only for new meals
-        const currentDate = new Date();
-        const formattedDate = currentDate.toISOString().split('T')[0]; // Get the date in 'YYYY-MM-DD' format
-        
-        const newMeal = {
-            id: mealCounter++,
-            name: mealName,
-            ingredients: [...tempIngredients],
-            creationDate: formattedDate, // Set the creation date for a new meal
-            nutritionalData: nutritionalData
-        };
-        meals.push(newMeal);
-
-        // Send new meal data to the server
-        saveMealToDatabase(newMeal);
+    } catch (err) {
+        console.error('Error saving meal:', err);
     }
 
-    // Resetting temporary states
     tempIngredients = [];
-
-    // Clearing form fields and closing the popup
     mealNameInput.value = '';
-    document.getElementById("mealPopUp").style.display = "none";
-    updateMealDisplay();
-    clearMealCreatorSearchResults();
-    clearDisplayedResults();
 }
 
-function saveMealToDatabase(mealData) {
-    // Assuming you have an endpoint to save meal data in your backend server
-    fetch('/api/meals', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(mealData)
-    })
-    .then(response => {
+// Delete meal
+async function deleteMeal(mealId) {
+    try {
+        const response = await fetch(`/api/meals/${mealId}`, { method: 'DELETE' });
         if (response.ok) {
-            console.log('Meal saved successfully.');
-            // Optionally, you can handle any further actions after saving the meal
+            meals = meals.filter(meal => meal.id !== parseInt(mealId));
+            updateMealDisplay();
         } else {
-            console.error('Failed to save meal:', response.statusText);
+            console.error('Error deleting meal:', response.statusText);
         }
-    })
-    .catch(error => console.error('Error saving meal:', error));
+    } catch (err) {
+        console.error('Error deleting meal:', err);
+    }
 }
 
-function updateMealInDatabase(mealData) {
-    // Assuming you have an endpoint to update meal data in your backend server
-    fetch(`/api/meals/${mealData.id}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(mealData)
-    })
-    .then(response => {
-        if (response.ok) {
-            console.log('Meal updated successfully.');
-            // Optionally, you can handle any further actions after updating the meal
-        } else {
-            console.error('Failed to update meal:', response.statusText);
-        }
-    })
-    .catch(error => console.error('Error updating meal:', error));
-}
-
-function deleteMeal(mealId) {
-    meals = meals.filter(meal => meal.id !== parseInt(mealId)); // Ensure mealId is compared correctly
-    updateMealDisplay();
-}
-
-
-
-function getFoodItemsBySearch(query) {
+// Get food items by search
+async function getFoodItemsBySearch(query) {
     const url = `https://nutrimonapi.azurewebsites.net/api/FoodItems/BySearch/${query}`;
-    return fetchWithApiKey(url);
+    return fetch(url).then(response => response.json());
 }
 
 // Update search results
 function updateSearchResults(data) {
     const container = document.getElementById("searchResultsContainer");
     container.innerHTML = '';
-
     data.forEach(item => {
         const resultItem = document.createElement('div');
         resultItem.textContent = item.foodName;
         resultItem.className = 'search-result-item';
-
         resultItem.addEventListener('click', () => addIngredientToMeal(item.foodID, item.foodName));
-
         container.appendChild(resultItem);
     });
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Updated to handle ingredient addition properly
-function addIngredientToMeal(foodID, foodName) {
-    fetchNutritionData(foodID)
-        .then(nutritionData => {
-            const inputContainer = document.createElement('div');
-            const nameSpan = document.createElement('span');
-            nameSpan.textContent = `${foodName}: `;
-
-            const weightInput = document.createElement('input');
-            weightInput.setAttribute('type', 'number');
-            weightInput.setAttribute('placeholder', 'Weight in grams');
-            weightInput.className = 'ingredient-weight-input';
-
-            const deleteBtn = document.createElement('button');
-            deleteBtn.textContent = 'Delete';
-            deleteBtn.className = 'delete-btn';
-            deleteBtn.style.marginLeft = '10px'; // Add some spacing between the input and the delete button
-            deleteBtn.onclick = () => {
-                inputContainer.remove(); // Remove the ingredient from the DOM
-                const ingredientIndex = tempIngredients.findIndex(ingredient => ingredient.name === foodName);
-                if (ingredientIndex !== -1) {
-                    tempIngredients.splice(ingredientIndex, 1); // Remove the ingredient from the tempIngredients array
-                }
-            };
-
-            const addBtn = document.createElement('button');
-            addBtn.textContent = 'Add';
-            addBtn.onclick = () => {
-                const weight = parseFloat(weightInput.value);
-                if (!weight || weight <= 0) {
-                    alert('Please enter a valid weight in grams.');
-                    return;
-                }
-                let multiplier = 1;
-                const nutritionalContent = {
-                    energy: nutritionData['1030'] * multiplier,
-                    protein: nutritionData['1110'] * multiplier,
-                    fat: nutritionData['1240'] * multiplier,
-                    fiber: nutritionData['1310'] * multiplier,
-                };
-                const ingredient = {
-                    id: foodID,
-                    name: foodName,
-                    weight: weight,
-                    nutritionalContent: nutritionalContent
-                };
-                tempIngredients.push(ingredient);
-                updateTempIngredientsDisplay();
-                // Clear the input fields after adding the ingredient
-                weightInput.value = '';
-            };
-
-            inputContainer.appendChild(nameSpan);
-            inputContainer.appendChild(weightInput);
-            inputContainer.appendChild(deleteBtn);
-            inputContainer.appendChild(addBtn);
-            document.getElementById("selectedIngredientsList").appendChild(inputContainer);
-        })
-        .catch(error => console.error("Failed to fetch nutrition data for foodID:", foodID, error));
-}
-
-//Update ingrediens display
-function updateTempIngredientsDisplay() {
-    const container = document.getElementById("selectedIngredientsList");
-    container.innerHTML = ''; // Clear existing entries
-    tempIngredients.forEach(ingredient => {
-        const li = document.createElement('li');
-        const ingredientNameSpan = document.createElement('span');
-        ingredientNameSpan.textContent = `${ingredient.name} - ${ingredient.weight}g`; // Displaying calculated weight
-        li.appendChild(ingredientNameSpan);
-        container.appendChild(li);
-    });
-}
-
-// Function to fetch API data
-function fetchNutritionData(foodID) {
-    const sortKeys = ['1030', '1110', '1310', '1240'];
-    const promises = sortKeys.map(sortKey => {
-        const url = `https://nutrimonapi.azurewebsites.net/api/FoodCompSpecs/ByItem/${foodID}/BySortKey/${sortKey}`;
-        return fetchWithApiKey(url).then(data => ({ sortKey, value: parseFloat(data[0]?.resVal.replace(',', '.')) || 0 }));
-    });
-    return Promise.all(promises).then(results => results.reduce((acc, { sortKey, value }) => ({ ...acc, [sortKey]: value }), {}));
-}
-
-
-document.addEventListener('DOMContentLoaded', function () {
-    // Initialization logic to load meals and display them
-    updateMealDisplay();
-
-    // Set up the search functionality for ingredients in the main UI
-    const searchButtonAll = document.getElementById('searchButtonAll');
-    if (searchButtonAll) {
-        searchButtonAll.addEventListener('click', function () {
-            const query = document.getElementById("searchInputAll").value.trim();
-            if (query) {
-                getFoodItemsBySearch(query)
-                    .then(data => {
-                        if (data.length > 0) {
-                            // Display the nutritional data in the main UI
-                            updateSearchResults(data);
-
-                            // Display the nutritional data modal
-                            const modal = document.getElementById("ingredientModal");
-                            modal.style.display = "block";
-
-                            // Fetch nutritional data for the first matching ingredient
-                            const foodID = data[0].foodID;
-                            fetchNutritionData(foodID)
-                                .then(nutritionalData => {
-                                    // Display the nutritional data in the modal
-                                    const nutritionalDataContent = document.getElementById("nutritionalDataContent");
-                                    nutritionalDataContent.innerHTML = `
-                                        <p><strong>Food Name:</strong> ${data[0].foodName}</p>
-                                        <p><strong>Energy:</strong> ${nutritionalData['1030']} kcal</p>
-                                        <p><strong>Protein:</strong> ${nutritionalData['1110']} g</p>
-                                        <p><strong>Fat:</strong> ${nutritionalData['1240']} g</p>
-                                        <p><strong>Fiber:</strong> ${nutritionalData['1310']} g</p>
-                                    `;
-                                })
-                                .catch(error => console.error("Failed to fetch nutritional data:", error));
-
-                            // Close the modal when the 'x' button is clicked
-                            const closeBtn = modal.querySelector(".close");
-                            closeBtn.addEventListener("click", () => {
-                                modal.style.display = "none";
-                            });
-                        } else {
-                            alert("No matching ingredient found.");
-                        }
-                    })
-                    .catch(error => console.error("Failed to fetch search results:", error));
+// Add ingredient to meal
+async function addIngredientToMeal(foodID, foodName) {
+    const nutritionalData = await fetchNutritionData(foodID);
+    const inputContainer = document.createElement('div');
+    const nameSpan = document.createElement('span');
+    nameSpan.textContent = `${foodName}: `;
+    const weightInput = document.createElement('input');
+    weightInput.setAttribute('type', 'number');
+    weightInput.setAttribute('placeholder', 'Weight in grams');
+    weightInput.className = 'ingredient-weight-input';
+    weightInput.addEventListener('input', () => updateIngredientWeight(currentMealId, foodID, weightInput.value));
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = 'Delete';
+    deleteBtn.className = 'delete-btn';
+    deleteBtn.dataset.ingredientId = foodID;
+    deleteBtn.addEventListener('click', () => deleteIngredient(currentMealId, foodID));
+    const addBtn = document.createElement('button');
+    addBtn.textContent = 'Add';
+    addBtn.onclick = () => {
+        const weight = parseFloat(weightInput.value);
+        if (!weight || weight <= 0) {
+            alert('Please enter a valid weight in grams.');
+            return;
+        }
+        const multiplier = weight / 100;
+        const ingredient = {
+            id: foodID,
+            name: foodName,
+            weight: weight,
+            nutritionalContent: {
+                calories: nutritionalData['1030'] * multiplier,
+                protein: nutritionalData['1110'] * multiplier,
+                carbs: nutritionalData['1320'] * multiplier,
+                fat: nutritionalData['1240'] * multiplier,
             }
-        });
-    }
-
-    // Set up event listeners for opening and closing the meal popup
-    const addMealButton = document.getElementById('addMealButton');
-    if (addMealButton) {
-        addMealButton.addEventListener('click', () => openMealPopup(null));
-    }
-
-    const closePopupButton = document.querySelector('.close');
-    if (closePopupButton) {
-        closePopupButton.addEventListener('click', closeMealPopup);
-    }
-
-    // Set up event listener for the save meal button within the popup
-    const saveMealButton = document.getElementById('saveMealButton');
-    if (saveMealButton) {
-        saveMealButton.addEventListener('click', function () {
-            saveMeal();
-            closeMealPopup();
-        });
-    }
-
-    // Set up the search functionality for ingredients when adding/editing a meal
-    const searchButton = document.getElementById('searchButton');
-    if (searchButton) {
-        searchButton.addEventListener('click', function () {
-            const query = document.getElementById("searchInput").value.trim();
-            if (query) {
-                getFoodItemsBySearch(query)
-                    .then(data => updateSearchResults(data))
-                    .catch(error => console.error("Failed to fetch search results:", error));
-            }
-        });
-    }
-
-    // Function to fetch nutrition data for a given foodID
-    function fetchNutritionData(foodID) {
-        const sortKeys = ['1030', '1110', '1310', '1240'];
-        const promises = sortKeys.map(sortKey => {
-            const url = `https://nutrimonapi.azurewebsites.net/api/FoodCompSpecs/ByItem/${foodID}/BySortKey/${sortKey}`;
-            return fetchWithApiKey(url).then(data => ({ sortKey, value: parseFloat(data[0]?.resVal.replace(',', '.')) || 0 }));
-        });
-        return Promise.all(promises).then(results => results.reduce((acc, { sortKey, value }) => ({ ...acc, [sortKey]: value }), {}));
-    }
-});
-
-
-
-
-//Search button for all ingredients
-function setupSearchButtonAll() {
-    const searchButtonAll = document.getElementById('searchButtonAll');
-    if (searchButtonAll) {
-        searchButtonAll.addEventListener('click', function () {
-            const query = document.getElementById("searchInputAll").value.trim();
-            if (query) {
-                getFoodItemsBySearch(query)
-                    .then(data => {
-                        if (data.length > 0) {
-                            const modal = document.getElementById("ingredientModal");
-                            modal.style.display = "block";
-
-                            const nutritionalDataContent = document.getElementById("nutritionalDataContent");
-                            nutritionalDataContent.innerHTML = `
-                                <p><strong>Food Name:</strong> ${data[0].foodName}</p>
-                                <p><strong>Energy:</strong> ${data[0]['1030']} kcal</p>
-                                <p><strong>Protein:</strong> ${data[0]['1110']} g</p>
-                                <p><strong>Fat:</strong> ${data[0]['1240']} g</p>
-                                <p><strong>Fiber:</strong> ${data[0]['1310']} g</p>
-                            `;
-
-                            const closeBtn = modal.querySelector(".close");
-                            closeBtn.addEventListener("click", () => {
-                                modal.style.display = "none";
-                            });
-                        } else {
-                            alert("No matching ingredient found.");
-                        }
-                    })
-                    .catch(error => console.error("Failed to fetch search results:", error));
-            }
-        });
-    }
+        };
+        tempIngredients.push(ingredient);
+        updateTempIngredientsDisplay();
+        weightInput.value = '';
+    };
+    inputContainer.appendChild(nameSpan);
+    inputContainer.appendChild(weightInput);
+    inputContainer.appendChild(deleteBtn);
+    inputContainer.appendChild(addBtn);
+    document.getElementById("selectedIngredientsList").appendChild(inputContainer);
 }
 
-setupSearchButtonAll();
-
-
-
-
-
-
-// Function to calculate total kcal per 100 grams
-function calculateTotalKcalPer100Grams(ingredients) {
-    const totalWeight = ingredients.reduce((total, ingredient) => total + ingredient.weight, 0);
-    const totalKcal = ingredients.reduce((total, ingredient) => {
-        const weightMultiplier = ingredient.weight / totalWeight;
-        return total + (ingredient.nutritionalContent.energy * weightMultiplier);
-    }, 0);
-    return totalKcal;
-}
-
-
-//delete ingredient
+// Update ingredient weight
 function updateIngredientWeight(mealId, ingredientId, newWeight) {
     const mealIndex = meals.findIndex(meal => meal.id === mealId);
     if (mealIndex !== -1) {
@@ -523,95 +232,98 @@ function updateIngredientWeight(mealId, ingredientId, newWeight) {
     }
 }
 
-// delete ingredient
+// Delete ingredient
 function deleteIngredient(mealId, ingredientId) {
     const mealIndex = meals.findIndex(meal => meal.id === mealId);
     if (mealIndex !== -1) {
         meals[mealIndex].ingredients = meals[mealIndex].ingredients.filter(ingredient => ingredient.id !== ingredientId);
-        localStorage.setItem("meals", JSON.stringify(meals));
-        openMealPopup(mealId); // Refresh the meal popup to reflect the updated ingredients
+        openMealPopup(mealId);
     }
 }
 
+// Fetch nutrition data
+async function fetchNutritionData(foodID) {
+    const sortKeys = ['1030', '1110', '1320', '1240'];
+    const promises = sortKeys.map(sortKey => {
+        const url = `https://nutrimonapi.azurewebsites.net/api/FoodCompSpecs/ByItem/${foodID}/BySortKey/${sortKey}`;
+        return fetch(url).then(response => response.json()).then(data => ({ sortKey, value: parseFloat(data[0]?.resVal.replace(',', '.')) || 0 }));
+    });
+    const results = await Promise.all(promises);
+    return results.reduce((acc, { sortKey, value }) => ({ ...acc, [sortKey]: value }), {});
+}
 
-// Function to update the meal display
+// Update temporary ingredients display
+function updateTempIngredientsDisplay() {
+    const container = document.getElementById("selectedIngredientsList");
+    container.innerHTML = '';
+    tempIngredients.forEach(ingredient => {
+        const li = document.createElement('li');
+        const ingredientNameSpan = document.createElement('span');
+        ingredientNameSpan.textContent = `${ingredient.name} - ${ingredient.weight}g`;
+        li.appendChild(ingredientNameSpan);
+        container.appendChild(li);
+    });
+}
+
+// Update meal display
 function updateMealDisplay() {
     const mealsContainer = document.querySelector('.meals-container');
     if (mealsContainer) {
-        mealsContainer.innerHTML = ''; // Clear the container
-
+        mealsContainer.innerHTML = '';
         meals.forEach((meal, index) => {
             const mealDiv = document.createElement('div');
             mealDiv.className = 'meal';
             mealDiv.id = `meal-${meal.id}`;
-
             const flexContainer = document.createElement('div');
             flexContainer.className = 'meal-flex-container';
-
             const mealNumberSpan = document.createElement('span');
             mealNumberSpan.className = 'meal-number';
             mealNumberSpan.textContent = `${index + 1}.`;
             flexContainer.appendChild(mealNumberSpan);
-
             const mealNameSpan = document.createElement('span');
             mealNameSpan.className = 'meal-name';
             mealNameSpan.textContent = `${meal.name}`;
             flexContainer.appendChild(mealNameSpan);
-
             const totalKcalPer100GramsSpan = document.createElement('span');
             totalKcalPer100GramsSpan.className = 'total-kcal-per-100-grams';
-            const totalKcalPer100Grams = calculateTotalKcalPer100Grams(meal.ingredients);
-            totalKcalPer100GramsSpan.textContent = ` ${totalKcalPer100Grams.toFixed(2)} `;
+            totalKcalPer100GramsSpan.textContent = ` ${meal.calories} `;
             flexContainer.appendChild(totalKcalPer100GramsSpan);
-
             const creationDateSpan = document.createElement('span');
             creationDateSpan.className = 'creation-date';
-            const formattedDate = meal.creationDate.split('/').join('-'); // Change slashes to dashes
+            const formattedDate = meal.creationDate.split('/').join('-');
             creationDateSpan.textContent = ` ${formattedDate}`;
             flexContainer.appendChild(creationDateSpan);
-
-            // Input field for the number
             const numberInput = document.createElement('input');
             numberInput.type = 'number';
-            numberInput.className = 'meal-number-input'; // You can style this as needed
-            numberInput.style.width = '20px'; // Set the width to accommodate only a single digit
-            numberInput.value = meal.number || 1; // Set the initial value to the saved number or default to 1
+            numberInput.className = 'meal-number-input';
+            numberInput.style.width = '20px';
+            numberInput.value = meal.number || 1;
             flexContainer.appendChild(numberInput);
-
-            // Event listener to update the meal object with the typed number
             numberInput.addEventListener('input', function () {
                 const inputValue = parseInt(this.value);
                 if (!isNaN(inputValue)) {
-                    const mealId = parseInt(this.closest('.meal').id.split('-')[1]);
-                    updateMealNumber(mealId, inputValue); // Call the function to update the meal number
+                    updateMealNumber(parseInt(this.closest('.meal').id.split('-')[1]), inputValue);
                 }
             });
-
-            // Total number of ingredients
             const ingredientCountSpan = document.createElement('span');
             ingredientCountSpan.className = 'ingredient-count';
             ingredientCountSpan.textContent = `Ingredients: ${meal.ingredients.length}`;
             flexContainer.appendChild(ingredientCountSpan);
-
-            // Pen icon button for editing the meal
             const editButton = document.createElement('button');
             editButton.className = 'edit-button';
             editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
             editButton.addEventListener('click', () => openMealPopup(meal.id));
             flexContainer.appendChild(editButton);
-
             const deleteButton = document.createElement('button');
             deleteButton.className = 'delete-button';
             deleteButton.innerHTML = '<i class="fas fa-trash-alt"></i>';
             deleteButton.addEventListener('click', () => deleteMeal(meal.id));
             flexContainer.appendChild(deleteButton);
-
             const bookIcon = document.createElement('button');
             bookIcon.className = 'book-icon';
             bookIcon.innerHTML = '<i class="fas fa-book"></i>';
             bookIcon.addEventListener('click', () => showNutritionalData(meal.id));
             flexContainer.appendChild(bookIcon);
-
             mealDiv.appendChild(flexContainer);
             mealsContainer.appendChild(mealDiv);
         });
@@ -620,39 +332,35 @@ function updateMealDisplay() {
     }
 }
 
-
-
-// Function to show nutritional data in a modal
+// Show nutritional data
 function showNutritionalData(mealId) {
-    const meal = meals.find(m => m.id === parseInt(mealId, 10)); // Ensure mealId is an integer
+    const meal = meals.find(m => m.id === parseInt(mealId, 10));
     if (meal) {
         const totalNutritionalContent = meal.ingredients.reduce((totals, ingredient) => {
             const multiplier = ingredient.weight / 100;
-            totals.energy += ingredient.nutritionalContent.energy * multiplier;
+            totals.energy += ingredient.nutritionalContent.calories * multiplier;
             totals.protein += ingredient.nutritionalContent.protein * multiplier;
             totals.fat += ingredient.nutritionalContent.fat * multiplier;
-            totals.fiber += ingredient.nutritionalContent.fiber * multiplier;
+            totals.carbs += ingredient.nutritionalContent.carbs * multiplier;
             return totals;
-        }, { energy: 0, protein: 0, fat: 0, fiber: 0 });
+        }, { energy: 0, protein: 0, fat: 0, carbs: 0 });
 
         const nutritionalData = {
             energy: totalNutritionalContent.energy.toFixed(2),
             protein: totalNutritionalContent.protein.toFixed(2),
             fat: totalNutritionalContent.fat.toFixed(2),
-            fiber: totalNutritionalContent.fiber.toFixed(2)
+            carbs: totalNutritionalContent.carbs.toFixed(2)
         };
-        localStorage.setItem(`nutritionalData_${mealId}`, JSON.stringify(nutritionalData));
-
         const nutritionalInfoContent = document.getElementById('nutritionalInfoContent');
         if (nutritionalInfoContent) {
             nutritionalInfoContent.innerHTML = `
                 <p class="ingredients-count">Ingredients Count: ${meal.ingredients.length}</p>
                 <ul>
                     ${meal.ingredients.map(ingredient => `
-                        <li class="ingredient-details">${ingredient.name} - ${ingredient.weight}g - Energy: ${(ingredient.nutritionalContent.energy * (ingredient.weight / 100)).toFixed(2)} kcal, Protein: ${(ingredient.nutritionalContent.protein * (ingredient.weight / 100)).toFixed(2)}g, Fat: ${(ingredient.nutritionalContent.fat * (ingredient.weight / 100)).toFixed(2)}g, Fiber: ${(ingredient.nutritionalContent.fiber * (ingredient.weight / 100)).toFixed(2)}g
+                        <li class="ingredient-details">${ingredient.name} - ${ingredient.weight}g - Energy: ${(ingredient.nutritionalContent.calories * (ingredient.weight / 100)).toFixed(2)} kcal, Protein: ${(ingredient.nutritionalContent.protein * (ingredient.weight / 100)).toFixed(2)}g, Fat: ${(ingredient.nutritionalContent.fat * (ingredient.weight / 100)).toFixed(2)}g, Carbs: ${(ingredient.nutritionalContent.carbs * (ingredient.weight / 100)).toFixed(2)}g
                     `).join('')}
                 </ul>
-                <p class="nutritional-text">Total Nutritional Content: Energy: ${nutritionalData.energy} kcal, Protein: ${nutritionalData.protein}g, Fat: ${nutritionalData.fat}g, Fiber: ${nutritionalData.fiber}g</p>
+                <p class="nutritional-text">Total Nutritional Content: Energy: ${nutritionalData.energy} kcal, Protein: ${nutritionalData.protein}g, Fat: ${nutritionalData.fat}g, Carbs: ${nutritionalData.carbs}g</p>
             `;
         }
 
@@ -660,24 +368,24 @@ function showNutritionalData(mealId) {
     }
 }
 
-
-
-
-// Select the close button within the nutritional details modal
-const closeNutritionalDetailsBtn = document.querySelector('.closeNutritionalDetails');
-
-// Add an event listener to the close button
-closeNutritionalDetailsBtn.addEventListener('click', function () {
-    // Hide the nutritional details modal when the close button is clicked
-    document.getElementById('nutritionalDetailsModal').style.display = "none";
-});
-
 window.openMealPopup = openMealPopup;
 window.saveMeal = saveMeal;
 window.closeMealPopup = closeMealPopup;
 
+document.addEventListener('DOMContentLoaded', fetchMeals);
 
+// Close nutritional details modal
+const closeNutritionalDetailsBtn = document.querySelector('.closeNutritionalDetails');
+if (closeNutritionalDetailsBtn) {
+    closeNutritionalDetailsBtn.addEventListener('click', function () {
+        document.getElementById('nutritionalDetailsModal').style.display = "none";
+    });
+}
 
-
-
-
+// Function to update meal number
+function updateMealNumber(mealId, number) {
+    const meal = meals.find(meal => meal.id === mealId);
+    if (meal) {
+        meal.number = number;
+    }
+}

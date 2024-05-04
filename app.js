@@ -1,6 +1,7 @@
 const express = require('express');
 const sql = require('mssql');
 const path = require('path');
+const mealController = require('./controllers/mealController');
 
 const app = express();
 const port = 3000;
@@ -36,21 +37,24 @@ app.post('/register', async (req, res) => {
         const pool = await sql.connect(config);
 
         // Insert new user into the database
-        const registrationResult = await pool.request().query(`
-            INSERT INTO Users (Email, PasswordHash)
-            OUTPUT inserted.UserID
-            VALUES ('${email}', '${password}')
-        `);
+        const registrationResult = await pool.request()
+            .input('email', sql.NVarChar, email)
+            .input('password', sql.NVarChar, password)
+            .query(`
+                INSERT INTO Users (Email, PasswordHash)
+                OUTPUT inserted.UserID
+                VALUES (@{email}, @{password})
+            `);
 
         const userID = registrationResult.recordset[0].UserID;
 
         // Redirect to MyProfile.html upon successful registration
         res.redirect(`/MyProfile.html?userID=${userID}`);
-
-        await sql.close();
     } catch (err) {
         console.error('Error registering user:', err);
         res.status(500).json({ error: 'An error occurred while registering user.' });
+    } finally {
+        await sql.close();
     }
 });
 
@@ -76,22 +80,26 @@ app.post('/updateUserData', async (req, res) => {
         }
 
         // Update user's data (Height, Weight, Age, Gender) in UserDetails table
-        await pool.request().query(`
-            UPDATE UserDetails
-            SET Height = ${height}, Weight = ${weight}, Age = ${age}, Gender = '${gender}'
-            WHERE UserID = ${userID}
-        `);
+        await pool.request()
+            .input('height', sql.Float, height)
+            .input('weight', sql.Float, weight)
+            .input('age', sql.Int, age)
+            .input('gender', sql.NVarChar, gender)
+            .input('userID', sql.Int, userID)
+            .query(`
+                UPDATE UserDetails
+                SET Height = @height, Weight = @weight, Age = @age, Gender = @gender
+                WHERE UserID = @userID
+            `);
 
         res.status(200).send('User data updated successfully');
-        await sql.close();
     } catch (err) {
         console.error('Error updating user data:', err);
         res.status(500).send('Failed to update user data');
+    } finally {
+        await sql.close();
     }
 });
-
-
-
 
 // Route for handling user login
 app.post('/login', async (req, res) => {
@@ -117,11 +125,11 @@ app.post('/login', async (req, res) => {
         } else {
             res.status(401).json({ message: 'Invalid credentials.' });
         }
-
-        await sql.close();
     } catch (err) {
         console.error('Error logging in:', err);
         res.status(500).json({ error: 'An error occurred while logging in.' });
+    } finally {
+        await sql.close();
     }
 });
 
@@ -138,22 +146,26 @@ app.post('/submit-body-data', async (req, res) => {
         const pool = await sql.connect(config);
 
         // Insert height, weight, age, and gender data into UserDetails table
-        await pool.request().query(`
-            INSERT INTO UserDetails (UserID, Height, Weight, Age, Gender)
-            VALUES (${userID}, ${height}, ${weight}, ${age}, '${gender}')
-        `);
+        await pool.request()
+            .input('userID', sql.Int, userID)
+            .input('height', sql.Float, height)
+            .input('weight', sql.Float, weight)
+            .input('age', sql.Int, age)
+            .input('gender', sql.NVarChar, gender)
+            .query(`
+                INSERT INTO UserDetails (UserID, Height, Weight, Age, Gender)
+                VALUES (@userID, @height, @weight, @age, @gender)
+            `);
 
         // Redirect to MealCreator.html upon successful data submission
         res.redirect(`/MealCreator.html?userID=${userID}`);
-
-        await sql.close();
     } catch (err) {
         console.error('Error submitting body data:', err);
         res.status(500).json({ error: 'An error occurred while submitting body data.' });
+    } finally {
+        await sql.close();
     }
 });
-
-
 
 // Route for serving MyStats page
 app.get('/MyStats.html', async (req, res) => {
@@ -175,20 +187,17 @@ app.get('/MyStats.html', async (req, res) => {
         if (result.recordset.length > 0) {
             const userData = result.recordset[0];
             // Send MyStats.html as response
-            const filePath = path.join(__dirname, 'views', 'MyStats.html');
-            res.sendFile(filePath);
+            res.sendFile(path.join(__dirname, 'views', 'MyStats.html'));
         } else {
             res.status(404).send('User not found');
         }
-
-        await sql.close();
     } catch (err) {
         console.error('Error fetching user data:', err);
         res.status(500).send('An error occurred while fetching user data');
+    } finally {
+        await sql.close();
     }
 });
-
-
 
 // Route to fetch user data based on userID
 app.get('/getUserData', async (req, res) => {
@@ -213,11 +222,11 @@ app.get('/getUserData', async (req, res) => {
         } else {
             res.status(404).send('User not found');
         }
-
-        await sql.close();
     } catch (err) {
         console.error('Error fetching user data:', err);
         res.status(500).send('An error occurred while fetching user data');
+    } finally {
+        await sql.close();
     }
 });
 
@@ -229,29 +238,33 @@ app.delete('/deleteUser', async (req, res) => {
         const pool = await sql.connect(config);
 
         // Delete user from UserDetails table
-        await pool.request().query(`
-            DELETE FROM UserDetails
-            WHERE UserID = ${userID}
-        `);
+        await pool.request()
+            .input('userID', sql.Int, userID)
+            .query(`
+                DELETE FROM UserDetails
+                WHERE UserID = @userID
+            `);
 
         // Delete user from Users table
-        await pool.request().query(`
-            DELETE FROM Users
-            WHERE UserID = ${userID}
-        `);
+        await pool.request()
+            .input('userID', sql.Int, userID)
+            .query(`
+                DELETE FROM Users
+                WHERE UserID = @userID
+            `);
 
         res.sendStatus(200); // Send success response after deletion
-
-        await sql.close();
     } catch (err) {
         console.error('Error deleting user:', err);
         res.status(500).send('Failed to delete user');
+    } finally {
+        await sql.close();
     }
 });
 
+// Use the meal controller for meal-related routes
+app.use('/api', mealController);
 
-
-// Route for serving MealCreator.html
 app.get('/MealCreator.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'MealCreator.html'));
 });
