@@ -37,16 +37,14 @@ app.post('/register', async (req, res) => {
         const pool = await sql.connect(config);
 
         // Insert new user into the database
-        // Insert new user into the database
         const registrationResult = await pool.request()
-        .input('email', sql.NVarChar, email)
-        .input('password', sql.NVarChar, password)
-        .query(`
-            INSERT INTO Users (Email, PasswordHash)
-            OUTPUT inserted.UserID
-            VALUES (@email, @password)
-        `);
-
+            .input('email', sql.NVarChar, email)
+            .input('password', sql.NVarChar, password)
+            .query(`
+                INSERT INTO Users (Email, PasswordHash)
+                OUTPUT inserted.UserID
+                VALUES (@{email}, @{password})
+            `);
 
         const userID = registrationResult.recordset[0].UserID;
 
@@ -55,6 +53,49 @@ app.post('/register', async (req, res) => {
     } catch (err) {
         console.error('Error registering user:', err);
         res.status(500).json({ error: 'An error occurred while registering user.' });
+    } finally {
+        await sql.close();
+    }
+});
+
+// Route to update user data
+app.post('/updateUserData', async (req, res) => {
+    const { userID, height, weight, age, gender } = req.body;
+
+    try {
+        const pool = await sql.connect(config);
+
+        // Fetch UserID from Users table based on provided userID
+        const userResult = await pool.request()
+            .input('userID', sql.Int, userID)
+            .query(`
+                SELECT UserID
+                FROM Users
+                WHERE UserID = @userID
+            `);
+
+        if (userResult.recordset.length === 0) {
+            res.status(404).send('User not found');
+            return;
+        }
+
+        // Update user's data (Height, Weight, Age, Gender) in UserDetails table
+        await pool.request()
+            .input('height', sql.Float, height)
+            .input('weight', sql.Float, weight)
+            .input('age', sql.Int, age)
+            .input('gender', sql.NVarChar, gender)
+            .input('userID', sql.Int, userID)
+            .query(`
+                UPDATE UserDetails
+                SET Height = @height, Weight = @weight, Age = @age, Gender = @gender
+                WHERE UserID = @userID
+            `);
+
+        res.status(200).send('User data updated successfully');
+    } catch (err) {
+        console.error('Error updating user data:', err);
+        res.status(500).send('Failed to update user data');
     } finally {
         await sql.close();
     }
@@ -126,7 +167,7 @@ app.post('/submit-body-data', async (req, res) => {
     }
 });
 
-
+// Route for serving MyStats page
 app.get('/MyStats.html', async (req, res) => {
     const userID = req.query.userID;
 
@@ -137,7 +178,7 @@ app.get('/MyStats.html', async (req, res) => {
         const result = await pool.request()
             .input('userID', sql.Int, userID)
             .query(`
-                SELECT Users.UserID AS UserID, Email, Height, Weight, Age, Gender
+                SELECT Email, Height, Weight, Age, Gender
                 FROM Users
                 INNER JOIN UserDetails ON Users.UserID = UserDetails.UserID
                 WHERE Users.UserID = @userID
@@ -157,9 +198,6 @@ app.get('/MyStats.html', async (req, res) => {
         await sql.close();
     }
 });
-
-
-
 
 // Route to fetch user data based on userID
 app.get('/getUserData', async (req, res) => {
@@ -224,54 +262,6 @@ app.delete('/deleteUser', async (req, res) => {
     }
 });
 
-// Route to update user data
-app.post('/updateUserData', async (req, res) => {
-    const { email, password, height, weight, age, gender } = req.body;
-
-    try {
-        const pool = await sql.connect(config);
-
-        // Fetch UserID based on provided email and password
-        const userResult = await pool.request()
-            .input('email', sql.NVarChar, email)
-            .input('password', sql.NVarChar, password)
-            .query(`
-                SELECT UserID
-                FROM Users
-                WHERE Email = @email AND PasswordHash = @password
-            `);
-
-        if (userResult.recordset.length === 0) {
-            res.status(404).send('User not found');
-            return;
-        }
-
-        const userID = userResult.recordset[0].UserID;
-
-        // Update user's data (Height, Weight, Age, Gender) in UserDetails table
-        await pool.request()
-            .input('height', sql.Float, height)
-            .input('weight', sql.Float, weight)
-            .input('age', sql.Int, age)
-            .input('gender', sql.NVarChar, gender)
-            .input('userID', sql.Int, userID)
-            .query(`
-                UPDATE UserDetails
-                SET Height = @height, Weight = @weight, Age = @age, Gender = @gender
-                WHERE UserID = @userID
-            `);
-
-        res.status(200).send('User data updated successfully');
-    } catch (err) {
-        console.error('Error updating user data:', err);
-        res.status(500).send('Failed to update user data');
-    } finally {
-        await sql.close();
-    }
-});
-
-
-
 // Use the meal controller for meal-related routes
 app.use('/api', mealController);
 
@@ -298,5 +288,3 @@ app.get('/DailyNutri.html', (req, res) => {
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
 });
-
-

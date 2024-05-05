@@ -27,10 +27,9 @@ function displayUserData(userData) {
         document.getElementById('age').innerText = userData.Age || '';
         document.getElementById('gender').innerText = userData.Gender || '';
         
-        // Set contenteditable attribute to true for inline editing
+        // Add event listeners for inline editing
         const editableFields = document.querySelectorAll('[contenteditable="true"]');
         editableFields.forEach(field => {
-            field.setAttribute('contenteditable', 'true');
             field.addEventListener('blur', () => {
                 submitUserData();
             });
@@ -51,13 +50,14 @@ function displayUserData(userData) {
     }
 }
 
+
 async function submitUserData() {
     const userID = getUserIdFromQueryString();
     const email = document.getElementById('email').innerText;
     const height = document.getElementById('height').innerText;
     const weight = document.getElementById('weight').innerText;
     const age = document.getElementById('age').innerText;
-    const gender = document.getElementById('gender').innerText;
+    const gender = document.getElementById('gender').innerText; // Get gender
 
     try {
         const response = await fetch('/updateUserData', {
@@ -78,6 +78,7 @@ async function submitUserData() {
     }
 }
 
+
 async function deleteUser() {
     const userID = getUserIdFromQueryString();
 
@@ -96,4 +97,3 @@ async function deleteUser() {
         console.error('Error deleting user:', err);
     }
 }
-
