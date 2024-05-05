@@ -117,12 +117,12 @@ function saveMeal() {
     }
 
     // Start of nutritional data and total weight calculation
-    let totalCalories = 0, totalProtein = 0, totalFats = 0, totalFiber = 0, totalWeight = 0;
+    let totalCalories = 0, totalProtein = 0, totalFat = 0, totalFiber = 0, totalWeight = 0;
 
     tempIngredients.forEach(ingredient => {
         totalCalories += ingredient.nutritionalContent.energy * (ingredient.weight / 100);
         totalProtein += ingredient.nutritionalContent.protein * (ingredient.weight / 100);
-        totalFats += ingredient.nutritionalContent.fats * (ingredient.weight / 100);
+        totalFat += ingredient.nutritionalContent.fat * (ingredient.weight / 100);
         totalFiber += ingredient.nutritionalContent.fiber * (ingredient.weight / 100);
         totalWeight += ingredient.weight;
     });
@@ -131,7 +131,7 @@ function saveMeal() {
     const nutritionalData = {
         calories: parseFloat(totalCalories.toFixed(2)),
         protein: parseFloat(totalProtein.toFixed(2)),
-        fats: parseFloat(totalFats.toFixed(2)),
+        fat: parseFloat(totalFat.toFixed(2)),
         fiber: parseFloat(totalFiber.toFixed(2)),
         totalWeight: parseFloat(totalWeight.toFixed(2))
     };
@@ -170,6 +170,8 @@ function saveMeal() {
             alert('An error occurred while saving the meal. Please try again.');
         });
 }
+
+
 
 function deleteMeal(mealId) {
     if (confirm("Are you sure you want to delete this meal?")) {

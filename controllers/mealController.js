@@ -31,7 +31,7 @@ router.get('/getMeals', async (req, res) => {
         const mealResults = await pool.request()
             .input('userID', sql.Int, userID)
             .query(`
-                SELECT MealID, UserID, Name, CreationDate, Calories, Protein, Fats, Fiber, TotalWeight
+                SELECT MealID, UserID, Name, CreationDate, Calories, Protein, Fat, Fiber, TotalWeight
                 FROM Meals
                 WHERE UserID = @userID
             `);
@@ -69,7 +69,7 @@ router.get('/getMeal', async (req, res) => {
         const mealResult = await pool.request()
             .input('mealID', sql.Int, mealID)
             .query(`
-                SELECT MealID, UserID, Name, CreationDate, Calories, Protein, Fats, Fiber, TotalWeight
+                SELECT MealID, UserID, Name, CreationDate, Calories, Protein, Fat, Fiber, TotalWeight
                 FROM Meals
                 WHERE MealID = @mealID
             `);
@@ -101,12 +101,11 @@ router.get('/getMeal', async (req, res) => {
 
 // Save or update a meal
 router.post('/saveMeal', async (req, res) => {
-    const { mealID, userID, mealName, creationDate, ingredients, nutritionalData } = req.body;
+    let { mealID, userID, mealName, creationDate, ingredients, nutritionalData } = req.body;
 
     try {
         const pool = await getDbPool();
 
-        // Insert or update meal
         if (mealID) {
             // Update existing meal
             await pool.request()
@@ -116,12 +115,12 @@ router.post('/saveMeal', async (req, res) => {
                 .input('creationDate', sql.Date, creationDate)
                 .input('calories', sql.Float, nutritionalData.calories)
                 .input('protein', sql.Float, nutritionalData.protein)
-                .input('fats', sql.Float, nutritionalData.fats)
+                .input('fat', sql.Float, nutritionalData.fat)
                 .input('fiber', sql.Float, nutritionalData.fiber)
                 .input('totalWeight', sql.Float, nutritionalData.totalWeight)
                 .query(`
                     UPDATE Meals
-                    SET UserID = @userID, Name = @mealName, CreationDate = @creationDate, Calories = @calories, Protein = @protein, Fats = @fats, Fiber = @fiber, TotalWeight = @totalWeight
+                    SET UserID = @userID, Name = @mealName, CreationDate = @creationDate, Calories = @calories, Protein = @protein, Fat = @fat, Fiber = @fiber, TotalWeight = @totalWeight
                     WHERE MealID = @mealID
                 `);
 
@@ -132,7 +131,6 @@ router.post('/saveMeal', async (req, res) => {
                     DELETE FROM MealIngredients
                     WHERE MealID = @mealID
                 `);
-
         } else {
             // Insert new meal
             const mealResult = await pool.request()
@@ -141,13 +139,13 @@ router.post('/saveMeal', async (req, res) => {
                 .input('creationDate', sql.Date, creationDate)
                 .input('calories', sql.Float, nutritionalData.calories)
                 .input('protein', sql.Float, nutritionalData.protein)
-                .input('fats', sql.Float, nutritionalData.fats)
+                .input('fat', sql.Float, nutritionalData.fat)
                 .input('fiber', sql.Float, nutritionalData.fiber)
                 .input('totalWeight', sql.Float, nutritionalData.totalWeight)
                 .query(`
-                    INSERT INTO Meals (UserID, Name, CreationDate, Calories, Protein, Fats, Fiber, TotalWeight)
+                    INSERT INTO Meals (UserID, Name, CreationDate, Calories, Protein, Fat, Fiber, TotalWeight)
                     OUTPUT inserted.MealID
-                    VALUES (@userID, @mealName, @creationDate, @calories, @protein, @fats, @fiber, @totalWeight)
+                    VALUES (@userID, @mealName, @creationDate, @calories, @protein, @fat, @fiber, @totalWeight)
                 `);
 
             mealID = mealResult.recordset[0].MealID;
