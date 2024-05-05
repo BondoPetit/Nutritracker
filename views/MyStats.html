@@ -29,7 +29,18 @@
         <p><strong>Weight (kg):</strong> <span id="weight" contenteditable="true"></span></p>
         <p><strong>Age:</strong> <span id="age" contenteditable="true"></span></p>
         <p><strong>Gender:</strong> <span id="gender" contenteditable="true"></span></p>
-        <!-- Delete User Button -->
+
+        <form id="updateUserDataForm">
+            <input type="hidden" id="userID" name="userID" value="<!-- Insert user ID here -->">
+            <input type="email" id="email" name="email" placeholder="Email">
+            <input type="password" id="password" name="password" placeholder="Password">
+            <input type="number" id="height" name="height" placeholder="Height (cm)">
+            <input type="number" id="weight" name="weight" placeholder="Weight (kg)">
+            <input type="number" id="age" name="age" placeholder="Age">
+            <input type="text" id="gender" name="gender" placeholder="Gender">
+            <button type="submit">Update</button>
+        </form>
+        
         <button id="deleteUserBtn">Delete Account</button>
 
     </div>
