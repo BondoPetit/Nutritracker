@@ -1,3 +1,5 @@
+// app.js
+
 const express = require('express');
 const sql = require('mssql');
 const path = require('path');
@@ -43,7 +45,7 @@ app.post('/register', async (req, res) => {
             .query(`
                 INSERT INTO Users (Email, PasswordHash)
                 OUTPUT inserted.UserID
-                VALUES (@{email}, @{password})
+                VALUES (@email, @password)
             `);
 
         const userID = registrationResult.recordset[0].UserID;
@@ -57,6 +59,7 @@ app.post('/register', async (req, res) => {
         await sql.close();
     }
 });
+
 
 // Route to update user data
 app.post('/updateUserData', async (req, res) => {
@@ -230,6 +233,7 @@ app.get('/getUserData', async (req, res) => {
     }
 });
 
+
 // Route to delete user account and associated data
 app.delete('/deleteUser', async (req, res) => {
     const { userID } = req.query;
@@ -265,21 +269,19 @@ app.delete('/deleteUser', async (req, res) => {
 // Use the meal controller for meal-related routes
 app.use('/api', mealController);
 
+// Serve various HTML pages
 app.get('/MealCreator.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'MealCreator.html'));
 });
 
-// Route for serving MealTracker.html
 app.get('/MealTracker.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'MealTracker.html'));
 });
 
-// Route for serving Activity.html
 app.get('/Activity.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'Activity.html'));
 });
 
-// Route for serving DailyNutri.html
 app.get('/DailyNutri.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'DailyNutri.html'));
 });
