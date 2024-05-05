@@ -157,8 +157,8 @@ async function deleteMeal(mealId) {
 
 // Get food items by search
 async function getFoodItemsBySearch(query) {
-    const url = `https://nutrimonapi.azurewebsites.net/api/FoodItems/BySearch/${query}`;
-    return fetch(url).then(response => response.json());
+    const response = await fetch(`/api/fooditems/search?query=${query}`);
+    return response.json();
 }
 
 // Update search results
@@ -167,9 +167,9 @@ function updateSearchResults(data) {
     container.innerHTML = '';
     data.forEach(item => {
         const resultItem = document.createElement('div');
-        resultItem.textContent = item.foodName;
+        resultItem.textContent = item.FoodName;
         resultItem.className = 'search-result-item';
-        resultItem.addEventListener('click', () => addIngredientToMeal(item.foodID, item.foodName));
+        resultItem.addEventListener('click', () => addIngredientToMeal(item.FoodID, item.FoodName));
         container.appendChild(resultItem);
     });
 }
@@ -204,10 +204,10 @@ async function addIngredientToMeal(foodID, foodName) {
             name: foodName,
             weight: weight,
             nutritionalContent: {
-                calories: nutritionalData['1030'] * multiplier,
-                protein: nutritionalData['1110'] * multiplier,
-                carbs: nutritionalData['1320'] * multiplier,
-                fat: nutritionalData['1240'] * multiplier,
+                calories: nutritionalData['Calories'] * multiplier,
+                protein: nutritionalData['Protein'] * multiplier,
+                carbs: nutritionalData['Carbs'] * multiplier,
+                fat: nutritionalData['Fat'] * multiplier,
             }
         };
         tempIngredients.push(ingredient);
@@ -221,35 +221,16 @@ async function addIngredientToMeal(foodID, foodName) {
     document.getElementById("selectedIngredientsList").appendChild(inputContainer);
 }
 
-// Update ingredient weight
-function updateIngredientWeight(mealId, ingredientId, newWeight) {
-    const mealIndex = meals.findIndex(meal => meal.id === mealId);
-    if (mealIndex !== -1) {
-        const ingredientIndex = tempIngredients.findIndex(ingredient => ingredient.id === ingredientId);
-        if (ingredientIndex !== -1) {
-            tempIngredients[ingredientIndex].weight = parseFloat(newWeight);
-        }
-    }
-}
-
-// Delete ingredient
-function deleteIngredient(mealId, ingredientId) {
-    const mealIndex = meals.findIndex(meal => meal.id === mealId);
-    if (mealIndex !== -1) {
-        meals[mealIndex].ingredients = meals[mealIndex].ingredients.filter(ingredient => ingredient.id !== ingredientId);
-        openMealPopup(mealId);
-    }
-}
-
 // Fetch nutrition data
 async function fetchNutritionData(foodID) {
-    const sortKeys = ['1030', '1110', '1320', '1240'];
-    const promises = sortKeys.map(sortKey => {
-        const url = `https://nutrimonapi.azurewebsites.net/api/FoodCompSpecs/ByItem/${foodID}/BySortKey/${sortKey}`;
-        return fetch(url).then(response => response.json()).then(data => ({ sortKey, value: parseFloat(data[0]?.resVal.replace(',', '.')) || 0 }));
-    });
-    const results = await Promise.all(promises);
-    return results.reduce((acc, { sortKey, value }) => ({ ...acc, [sortKey]: value }), {});
+    const response = await fetch(`/api/nutrition?foodID=${foodID}`);
+    const data = await response.json();
+    return {
+        Calories: data.find(n => n.SortKey === '1030')?.ResVal || 0,
+        Protein: data.find(n => n.SortKey === '1110')?.ResVal || 0,
+        Carbs: data.find(n => n.SortKey === '1320')?.ResVal || 0,
+        Fat: data.find(n => n.SortKey === '1240')?.ResVal || 0
+    };
 }
 
 // Update temporary ingredients display
