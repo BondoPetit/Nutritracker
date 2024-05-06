@@ -31,6 +31,9 @@ router.post('/saveActivity', async (req, res) => {
         // Convert the time string into the required format
         const activityTime = new Date(`1970-01-01T${time}`);
 
+        // Add 1 hour to the activityTime
+        activityTime.setHours(activityTime.getHours() + 1);
+
         if (id) {
             // Update an existing record
             await pool.request()
