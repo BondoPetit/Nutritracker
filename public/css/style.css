@@ -19,7 +19,7 @@ body {
 }
 
 .ablelogo {
-    width: 2%;
+    width: 45px;
     position: absolute;
     z-index: -1;
     margin-top: 28px;
@@ -30,6 +30,7 @@ body {
     font-size: 20px;
     margin-right: 70px;
     margin-top: 40px;
+    white-space: nowrap;
 }
 
 .overskrifter-tabel {
