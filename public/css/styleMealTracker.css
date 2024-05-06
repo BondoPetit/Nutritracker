@@ -46,57 +46,43 @@
     font-size: 220%;
 }
 
-.overskrifter h4 {
-    color: #9E9E9E;
+.meal-name {
+    margin-left: -110px;
 }
 
-.overskrifter h4.MealName {
-    color: #9E9E9E;
-    margin-left: 15%; /* Adjust the margin as needed for spacing between elements */
+.location {
+    margin-left: -50px;
 }
 
-.overskrifter h4.Kcal {
-    color: #9E9E9E;
-    margin-left: 50px; /* Adjust the margin as needed for spacing between elements */
+.kcal {
+    margin-left: -50px;
 }
 
-.overskrifter h4.Added {
-    color: #9E9E9E;
-    margin-left: 7%; /* Adjust the margin as needed for spacing between elements */
+.added {
+    margin-left: -50px;
 }
 
-.overskrifter h4.Ingredients {
-    color: #9E9E9E;
-    margin-left: 400px; /* Adjust the margin as needed for spacing between elements */
+.eaten {
+    margin-right: 110px;
+    margin-left: -50px;
 }
 
-.overskrifter h4.Eaten {
-    color: #9E9E9E;
-    margin-left: 5%;
-}
-
-.recordsContainer .mealRecord {
+.mealRecord {
     width: auto;
+    height: auto;
     max-width: 100%;
     border-radius: 30px;
-    padding: 25px;
+    padding: 10px;
     background-color: #DEF6D8;
     margin-bottom: 10px;
-    color: black;
-    margin-left: 14%; /* Adjust based on your layout */
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Optional: adds depth */
+    color: black;   
 }
-
-
 
 /* Ensure text inside mealRecord is displayed vertically */
 .recordsContainer .mealRecord p {
     white-space: nowrap; /* Prevent text wrapping */
     writing-mode: vertical-rl; /* Text orientation: vertical, right to left */
 }
-
-
-
 
 .modal {
     display: none;
@@ -137,17 +123,10 @@
     cursor: pointer;
 }
 
-
 .mealRecord {
     display: flex;
     align-items: center;
     justify-content: center; /* Juster knapper til højre side */
-}
-
-.delete-button,
-.edit-button,
-.book-icon {
-    margin-left: 5px; /* Tilføj lidt mellemrum mellem knapperne */
 }
 
 .mealData {
@@ -160,8 +139,25 @@
     padding-right: 20px; /* Add padding to increase spacing between elements */
 }
 
+.show-nutritional-data-button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+  
+.show-nutritional-data-button .book-icon { /* Change the color as needed */
+    font-size: 15px; /* Adjust the font size as needed */
+}
 
-.book-icon i {
-    border: none !important; /* Fjern border med !important */
-    font-size: 1.2em;
+.mealRecord .buttons-container {
+     display: flex;
+    flex-direction: row; /* Arrange buttons horizontally */
+    align-items: center; /* Align buttons vertically */
+    justify-content: flex-end; /* Align buttons to the right side */
+    margin-top: 10px; /* Add margin to the top of the container */
+}
+
+.mealRecord .buttons-container button {
+    margin-left: 10px; /* Add margin between individual buttons */
 }
