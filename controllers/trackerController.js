@@ -2,6 +2,7 @@ const express = require('express');
 const sql = require('mssql');
 const router = express.Router();
 
+
 const config = {
     server: 'eksamensprojekt2024.database.windows.net',
     database: 'Login',
@@ -77,12 +78,9 @@ router.post('/saveMealIntake', async (req, res) => {
         console.log('Request received:', req.body);
         const pool = await getDbPool();
 
-        // Check if the time is in the correct format (HH:mm:ss)
-        const timeRegex = /^(?:[01]\d|2[0-3]):(?:[0-5]\d):(?:[0-5]\d)$/;
-        if (!timeRegex.test(time)) {
-            console.log('Invalid time format.');
-            return res.status(400).json({ error: 'Invalid time format. Time should be in HH:mm:ss format.' });
-        }
+        // Convert the time string into a Date object
+        const [hours, minutes, seconds] = time.split(':');
+        const intakeTime = new Date(1970, 0, 1, hours, minutes, seconds);
 
         // Fetch the nutritional information from the Meals table based on MealID
         const mealQueryResult = await pool.request()
@@ -108,12 +106,8 @@ router.post('/saveMealIntake', async (req, res) => {
             };
         }
 
-        // Convert the time to HH:mm:ss format
-        const timeParts = time.split(':');
-        const formattedTime = `${timeParts[0]}:${timeParts[1]}:${timeParts[2]}`;
-
-        // Continue with saving the meal intake
         if (id) {
+            // Update an existing record
             await pool.request()
                 .input('mealIntakeID', sql.Int, id)
                 .input('userID', sql.Int, userID)
@@ -121,7 +115,7 @@ router.post('/saveMealIntake', async (req, res) => {
                 .input('name', sql.NVarChar, name)
                 .input('weight', sql.Float, weight)
                 .input('intakeDate', sql.Date, date)
-                .input('intakeTime', sql.Time, formattedTime)
+                .input('intakeTime', sql.Time(7), intakeTime)
                 .input('location', sql.NVarChar, location)
                 .input('calories', sql.Float, calculatedNutritionalData.energy)
                 .input('protein', sql.Float, calculatedNutritionalData.protein)
@@ -134,13 +128,14 @@ router.post('/saveMealIntake', async (req, res) => {
                     WHERE MealIntakeID = @mealIntakeID
                 `);
         } else {
+            // Insert a new record, letting SQL Server auto-generate MealIntakeID
             await pool.request()
                 .input('userID', sql.Int, userID)
                 .input('mealID', sql.Int, mealID)
                 .input('name', sql.NVarChar, name)
                 .input('weight', sql.Float, weight)
                 .input('intakeDate', sql.Date, date)
-                .input('intakeTime', sql.Time, formattedTime)
+                .input('intakeTime', sql.Time(7), intakeTime)
                 .input('location', sql.NVarChar, location)
                 .input('calories', sql.Float, calculatedNutritionalData.energy)
                 .input('protein', sql.Float, calculatedNutritionalData.protein)
@@ -158,6 +153,17 @@ router.post('/saveMealIntake', async (req, res) => {
         res.status(500).json({ error: 'An error occurred while saving the meal intake.' });
     }
 });
+
+
+
+
+
+
+
+
+
+
+
 
 
 // Delete a meal intake

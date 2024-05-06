@@ -63,24 +63,20 @@ document.addEventListener("DOMContentLoaded", function () {
         const mealName = document.getElementById('mealName').selectedOptions[0].textContent;
         const mealWeight = parseFloat(document.getElementById('mealWeight').value);
         const intakeDate = document.getElementById('intakeDate').value;
-        // Format time to "HH:mm:ss"
         let intakeTime = document.getElementById('intakeTime').value;
-        intakeTime = intakeTime.length === 5 ? `${intakeTime}:00` : intakeTime;
         const location = document.getElementById('location').value;
-
-
-
+    
         // Calculate nutritional data based on the selected meal and its weight
         const selectedMeal = meals.find(meal => meal.MealID === mealID);
         const nutritionalData = calculateNutritionalData(selectedMeal, mealWeight);
-
+    
         // Check if nutritional data is available
         if (!nutritionalData || !nutritionalData.energy) {
             alert("Missing nutritional information for selected meal.");
             console.error("Missing nutritional information for selected meal:", selectedMeal);
             return;
         }
-
+    
         // Construct the new record object including nutritional data
         const newRecord = {
             id: selectedMeal ? selectedMeal.MealIntakeID : null,
@@ -93,7 +89,7 @@ document.addEventListener("DOMContentLoaded", function () {
             location: location,
             nutritionalData: nutritionalData
         };
-
+    
         fetch('/api/saveMealIntake', {
             method: 'POST',
             headers: {
@@ -101,36 +97,43 @@ document.addEventListener("DOMContentLoaded", function () {
             },
             body: JSON.stringify(newRecord)
         })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    closeTrackerPopup();
-                    fetchMealIntakes();
-                } else {
-                    throw new Error('Failed to save the meal intake');
-                }
-            })
-            .catch(error => {
-                console.error('Error saving the meal intake:', error);
-                alert('An error occurred while saving the meal intake. Please try again.');
-            });
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                closeTrackerPopup();
+                fetchMealIntakes();
+            } else {
+                throw new Error('Failed to save the meal intake');
+            }
+        })
+        .catch(error => {
+            console.error('Error saving the meal intake:', error);
+            alert('An error occurred while saving the meal intake. Please try again.');
+        });
     };
+    
+    
+    
 
 
 
 
 
-    // Fetch and fill the current date and time
-    function fillCurrentDateTime() {
-        const now = new Date();
-        const dateInput = document.getElementById('intakeDate');
-        const timeInput = document.getElementById('intakeTime');
+// Fetch and fill the current date and time
+function fillCurrentDateTime() {
+    const now = new Date();
+    const dateInput = document.getElementById('intakeDate');
+    const timeInput = document.getElementById('intakeTime');
 
-        if (dateInput && timeInput) {
-            dateInput.value = now.toISOString().split('T')[0];
-            timeInput.value = now.toTimeString().slice(0, 5);
-        }
+    // Format the time as "HH:mm:ss"
+    const formattedTime = now.toTimeString().split(' ')[0];
+
+    if (dateInput && timeInput) {
+        dateInput.value = now.toISOString().split('T')[0];
+        timeInput.value = formattedTime;
     }
+}
+
 
     // Fetch the current location
     function fetchCurrentLocation() {
