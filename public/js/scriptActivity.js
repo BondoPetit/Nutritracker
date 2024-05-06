@@ -99,15 +99,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 },
                 body: JSON.stringify(data),
             }).then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    console.log('Activity saved successfully.');
-                } else {
-                    console.error('Failed to save activity:', data.error);
-                }
-            }).catch(error => {
-                console.error('Error saving activity:', error);
-            });
+                .then(data => {
+                    if (data.success) {
+                        console.log('Activity saved successfully.');
+                    } else {
+                        console.error('Failed to save activity:', data.error);
+                    }
+                }).catch(error => {
+                    console.error('Error saving activity:', error);
+                });
 
         } else {
             caloriesInfo.textContent = "Please select an activity and enter a valid duration.";
@@ -117,10 +117,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const form = document.querySelector(".form-box");
     form.addEventListener("submit", calculateCalories);
 
-    const calculateBasalMetabolism = function (age, weight, gender) {
+     // Calculate basal metabolism based on age, weight, and gender
+     const calculateBasalMetabolism = function (age, weight, gender) {
         let basalMetabolism = 0;
 
-        if (gender === 'Female') {
+        if (gender === 'female') {
             if (age < 3) {
                 basalMetabolism = (0.244 * weight) - 0.13;
             } else if (age >= 4 && age <= 10) {
@@ -136,7 +137,7 @@ document.addEventListener("DOMContentLoaded", function () {
             } else if (age > 75) {
                 basalMetabolism = (0.0410 * weight) + 2.61;
             }
-        } else if (gender === 'Male') {
+        } else if (gender === 'male') {
             if (age < 3) {
                 basalMetabolism = (0.249 * weight) - 0.13;
             } else if (age >= 4 && age <= 10) {
@@ -157,24 +158,29 @@ document.addEventListener("DOMContentLoaded", function () {
         return basalMetabolism;
     };
 
+    // Modal functionality
     const modalTrigger = document.getElementById('modalTrigger');
     const modal = document.getElementById('activityModal');
     const closeBtn = document.getElementsByClassName('close')[0];
 
+    // Function to open the modal
     modalTrigger.onclick = function () {
         modal.style.display = "block";
     }
 
+    // Function to close the modal
     closeBtn.onclick = function () {
         modal.style.display = "none";
     }
 
+    // Close the modal if user clicks outside the modal content
     window.onclick = function (event) {
         if (event.target == modal) {
             modal.style.display = "none";
         }
     };
 
+    // Calculate basal metabolism when "Calculate Basal Metabolism" button is clicked
     const calculateMetabolismBtn = document.getElementById('calculateMetabolism');
     calculateMetabolismBtn.addEventListener('click', function () {
         const age = parseFloat(document.getElementById('age').value);
@@ -184,6 +190,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const metabolismResult = document.getElementById('metabolismResult');
         if (!isNaN(age) && !isNaN(weight)) {
             const basalMetabolism = calculateBasalMetabolism(age, weight, gender);
+            metabolismResult.textContent = `Basal Metabolism: ${basalMetabolism.toFixed(2)} kcal/day`;
             metabolismResult.textContent = `Basal Metabolism: ${basalMetabolism.toFixed(2)} MJ`;
         } else {
             metabolismResult.textContent = 'Please enter valid age and weight.';
