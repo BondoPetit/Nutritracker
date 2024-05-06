@@ -45,7 +45,7 @@ router.get('/getMealIntakes', async (req, res) => {
 
 // Fetch a specific meal intake by ID
 router.get('/getMealIntake', async (req, res) => {
-    const mealIntakeID = parseInt(req.query.recordId, 10);
+    const mealIntakeID = parseInt(req.query.id, 10); // Changed from 'recordId' to 'id'
     try {
         const pool = await getDbPool();
 
@@ -68,6 +68,7 @@ router.get('/getMealIntake', async (req, res) => {
     }
 });
 
+
 // Save or update a meal intake
 router.post('/saveMealIntake', async (req, res) => {
     const { id, userID, mealID, name, weight, date, time, location, nutritionalData } = req.body;
@@ -77,9 +78,17 @@ router.post('/saveMealIntake', async (req, res) => {
         console.log('Request received:', req.body);
         const pool = await getDbPool();
 
+        console.log('ID:', id); // Log the value of id parameter
+
         // Convert the time string into a Date object
         const [hours, minutes, seconds] = time.split(':');
-        const intakeTime = new Date(1970, 0, 1, hours, minutes, seconds);
+        let intakeHour = parseInt(hours, 10);
+        intakeHour += 1; // Add one hour
+
+        // Ensure the hour value stays within the range of 0-23
+        intakeHour = intakeHour % 24;
+
+        const intakeTime = new Date(1970, 0, 1, intakeHour, minutes, seconds);
 
         // Fetch the nutritional information from the Meals table based on MealID
         const mealQueryResult = await pool.request()
@@ -105,8 +114,22 @@ router.post('/saveMealIntake', async (req, res) => {
             };
         }
 
+        // Include the id parameter in the request body if editing a meal intake
+        const requestBody = {
+            id: id, // Include the id parameter
+            userID: userID,
+            mealID: mealID,
+            name: name,
+            weight: weight,
+            date: date,
+            time: time,
+            location: location,
+            nutritionalData: calculatedNutritionalData
+        };
+
         if (id) {
-            // Update an existing record
+            // If id is provided, update the existing record
+            console.log('Updating existing meal intake with ID:', id);
             await pool.request()
                 .input('mealIntakeID', sql.Int, id)
                 .input('userID', sql.Int, userID)
@@ -127,7 +150,8 @@ router.post('/saveMealIntake', async (req, res) => {
                     WHERE MealIntakeID = @mealIntakeID
                 `);
         } else {
-            // Insert a new record, letting SQL Server auto-generate MealIntakeID
+            // If id is not provided, insert a new record
+            console.log('Inserting new meal intake.');
             await pool.request()
                 .input('userID', sql.Int, userID)
                 .input('mealID', sql.Int, mealID)
@@ -152,6 +176,10 @@ router.post('/saveMealIntake', async (req, res) => {
         res.status(500).json({ error: 'An error occurred while saving the meal intake.' });
     }
 });
+
+
+
+
 
 // Delete a meal intake
 router.delete('/deleteMealIntake', async (req, res) => {

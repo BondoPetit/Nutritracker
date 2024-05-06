@@ -57,60 +57,59 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
 
-    // Save the tracker data
-    window.saveTracker = function () {
-        const mealID = parseInt(document.getElementById('mealName').value, 10);
-        const mealName = document.getElementById('mealName').selectedOptions[0].textContent;
-        const mealWeight = parseFloat(document.getElementById('mealWeight').value);
-        const intakeDate = document.getElementById('intakeDate').value;
-        let intakeTime = document.getElementById('intakeTime').value;
-        const location = document.getElementById('location').value;
-    
-        // Calculate nutritional data based on the selected meal and its weight
-        const selectedMeal = meals.find(meal => meal.MealID === mealID);
-        const nutritionalData = calculateNutritionalData(selectedMeal, mealWeight);
-    
-        // Check if nutritional data is available
-        if (!nutritionalData || !nutritionalData.energy) {
-            alert("Missing nutritional information for selected meal.");
-            console.error("Missing nutritional information for selected meal:", selectedMeal);
-            return;
-        }
-    
-        // Construct the new record object including nutritional data
-        const newRecord = {
-            id: selectedMeal ? selectedMeal.MealIntakeID : null,
-            userID: selectedMeal.UserID,
-            mealID: selectedMeal.MealID,
-            name: selectedMeal.Name,
-            weight: mealWeight,
-            date: intakeDate,
-            time: intakeTime,
-            location: location,
-            nutritionalData: nutritionalData
-        };
-    
-        fetch('/api/saveMealIntake', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(newRecord)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                closeTrackerPopup();
-                fetchMealIntakes();
-            } else {
-                throw new Error('Failed to save the meal intake');
-            }
-        })
-        .catch(error => {
-            console.error('Error saving the meal intake:', error);
-            alert('An error occurred while saving the meal intake. Please try again.');
-        });
+// Save the tracker data
+window.saveTracker = function () {
+    const mealID = parseInt(document.getElementById('mealName').value, 10);
+    const mealName = document.getElementById('mealName').selectedOptions[0].textContent;
+    const mealWeight = parseFloat(document.getElementById('mealWeight').value);
+    const intakeDate = document.getElementById('intakeDate').value;
+    let intakeTime = document.getElementById('intakeTime').value;
+    const location = document.getElementById('location').value;
+
+    // Fetch UserID from the URL
+    const userID = getUserIDFromURL();
+
+    // Check if the record is for editing or adding a new intake
+    const editMode = document.getElementById('mealIntakeForm').getAttribute('data-edit-mode') === 'true';
+
+    // Construct the new record object
+    const newRecord = {
+        userID: userID, // Include the UserID
+        mealID: mealID,
+        name: mealName,
+        weight: mealWeight,
+        date: intakeDate,
+        time: intakeTime,
+        location: location,
     };
+
+    // If in edit mode, include the intake ID in the record
+    if (editMode) {
+        newRecord.id = parseInt(document.getElementById('mealIntakeForm').getAttribute('data-record-id'));
+    }
+
+    // Save the record
+    fetch('/api/saveMealIntake', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newRecord)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            closeTrackerPopup();
+            fetchMealIntakes();
+        } else {
+            throw new Error('Failed to save the meal intake');
+        }
+    })
+    .catch(error => {
+        console.error('Error saving the meal intake:', error);
+        alert('An error occurred while saving the meal intake. Please try again.');
+    });
+};
     
     
     
@@ -162,10 +161,10 @@ function fillCurrentDateTime() {
         try {
             // Fetch meals
             await fetchMeals();
-
+    
             // Create options for the meal selector
             const mealSelectorHTML = meals.map(meal => `<option value="${meal.MealID}">${meal.Name}</option>`).join('');
-
+    
             // Construct the tracker modal
             const modalContent = document.querySelector('#mealPopUp .modal-content');
             modalContent.innerHTML = `<span class="close" onclick="closeTrackerPopup()">&times;</span>
@@ -184,51 +183,52 @@ function fillCurrentDateTime() {
                 <div id="nutritionalDisplay"></div> <!-- Nutritional data display -->
                 <button type="button" onclick="saveTracker(${recordId})">Save Meal Intake</button>
             </form>`;
-
+    
             // If in edit mode, populate fields with existing data
             if (editMode && recordId !== null) {
                 const response = await fetch(`/api/getMealIntake?id=${recordId}`);
                 const record = await response.json();
-
+    
                 const mealNameElem = document.getElementById('mealName');
                 const mealWeightElem = document.getElementById('mealWeight');
                 const intakeDateElem = document.getElementById('intakeDate');
                 const intakeTimeElem = document.getElementById('intakeTime');
                 const locationElem = document.getElementById('location');
-
+    
                 if (mealNameElem) mealNameElem.value = record.MealID || '';
                 if (mealWeightElem) mealWeightElem.value = record.Weight || '';
                 if (intakeDateElem) intakeDateElem.value = record.IntakeDate.split('T')[0] || '';
                 if (intakeTimeElem) intakeTimeElem.value = record.IntakeTime.split('T')[1].substring(0, 5) || '';
                 if (locationElem) locationElem.value = record.Location || '';
             }
-
+    
             setupMealSelectionChange();
         } catch (error) {
             console.error('Error fetching meals:', error);
         }
     }
+    
 
     // Display the meals from database
     function displayMeals() {
         const recordsContainer = document.getElementById('recordsContainer');
-
+    
         // Clear existing records to prevent duplication
         recordsContainer.innerHTML = '';
-
+    
         // Iterate over records and append them to the container
         mealIntakes.forEach(record => {
             const recordElement = document.createElement('div');
             recordElement.classList.add('mealRecord');
             recordElement.dataset.recordId = record.MealIntakeID;
-
+    
             const textElement = document.createElement('p');
             textElement.textContent = `${record.MealName}  ${record.Weight}g  ${record.IntakeDate}  ${record.IntakeTime} Location: ${record.Location}`;
             recordElement.appendChild(textElement);
-
+    
             const buttonsContainer = document.createElement('div');
             buttonsContainer.classList.add('buttons-container');
-
+    
             const editButton = document.createElement('button');
             editButton.classList.add('edit-button');
             editButton.innerHTML = '<i class="fas fa-pencil-alt edit-icon"></i>';
@@ -236,7 +236,7 @@ function fillCurrentDateTime() {
                 editMealRecord(record.MealIntakeID);
             });
             buttonsContainer.appendChild(editButton);
-
+    
             const deleteButton = document.createElement('button');
             deleteButton.classList.add('delete-button');
             deleteButton.innerHTML = '<i class="fas fa-trash-alt delete-icon"></i>';
@@ -244,7 +244,7 @@ function fillCurrentDateTime() {
                 deleteMealRecord(record.MealIntakeID);
             });
             buttonsContainer.appendChild(deleteButton);
-
+    
             const nutritionalDataButton = document.createElement('button');
             nutritionalDataButton.classList.add('show-nutritional-data-button');
             nutritionalDataButton.innerHTML = '<i class="fas fa-book book-icon"></i>';
@@ -253,18 +253,22 @@ function fillCurrentDateTime() {
                 showNutritionalData(record.MealIntakeID);
             });
             buttonsContainer.appendChild(nutritionalDataButton);
-
+    
             recordElement.appendChild(buttonsContainer);
             recordsContainer.appendChild(recordElement);
         });
-
-        recordsContainer.addEventListener('click', function (event) {
-            if (event.target.classList.contains('edit-icon')) {
+    
+        // Event listener for the edit button
+        const editButtons = document.querySelectorAll('.edit-button');
+        editButtons.forEach(editButton => {
+            editButton.addEventListener('click', function (event) {
                 const recordId = parseInt(event.target.closest('.mealRecord').dataset.recordId);
                 editMealRecord(recordId);
-            }
+            });
         });
     }
+    
+    
 
     function setupMealSelectionChange() {
         const mealSelector = document.getElementById('mealName');
@@ -393,7 +397,10 @@ function fillCurrentDateTime() {
             });
     };
 
+
+    
     window.editMealRecord = function (mealIntakeID) {
+        // Call the trackerPopup function with editMode set to true and the mealIntakeID passed as recordId
         trackerPopup(true, mealIntakeID);
     };
 
