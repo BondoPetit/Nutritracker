@@ -31,11 +31,11 @@ document.addEventListener("DOMContentLoaded", function () {
             "Jogging": 666,
             "Langrend": 405,
             "Løb i moderat tempo": 872,
-            "Løb i hurtigt tempo": 1213,
+            "Løb in hurtigt tempo": 1213,
             "Ridning": 414,
             "Skøjteløb": 273,
             "Svømning": 296,
-            "Cykling i højt tempo": 658
+            "Cykling in højt tempo": 658
         },
         "work": {
             "Bilreparation": 259,
@@ -47,11 +47,6 @@ document.addEventListener("DOMContentLoaded", function () {
             "Hugge og slæbe på brænde": 1168
         }
     };
-
-    const categorySelect = document.getElementById("category");
-    const activitySelect = document.getElementById("activity");
-    const durationInput = document.getElementById("duration");
-    const caloriesInfo = document.getElementById("caloriesInfo");
 
     // Populate activity options based on the selected category
     function populateActivities(category) {
@@ -65,8 +60,20 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    const categorySelect = document.getElementById("category");
+    categorySelect.addEventListener("change", function () {
+        const selectedCategory = this.value;
+        populateActivities(selectedCategory);
+    });
+
+    const activitySelect = document.getElementById("activity");
+    const durationInput = document.getElementById("duration");
+    const dateInput = document.getElementById("date");
+    const timeInput = document.getElementById("time");
+    const caloriesInfo = document.getElementById("caloriesInfo");
+
     // Calculate calories based on selected activity and duration
-    function calculateCalories(event) {
+    async function calculateCalories(event) {
         event.preventDefault();
         const selectedActivity = parseFloat(activitySelect.value); // Get selected activity's kcal/h value
         const duration = parseFloat(durationInput.value); // Get duration in minutes
@@ -74,22 +81,42 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (!isNaN(caloriesBurned)) {
             caloriesInfo.textContent = `Calories burned: ${caloriesBurned.toFixed(2)} kcal`;
+
+            // Save to server
+            const data = {
+                userID: 1, // Replace with the actual user ID
+                activityName: activitySelect.options[activitySelect.selectedIndex].textContent,
+                duration: duration,
+                date: dateInput.value,
+                time: timeInput.value,
+                caloriesBurned: caloriesBurned.toFixed(2)
+            };
+
+            await fetch('/api/saveActivity', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            }).then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('Activity saved successfully.');
+                } else {
+                    console.error('Failed to save activity:', data.error);
+                }
+            }).catch(error => {
+                console.error('Error saving activity:', error);
+            });
+
         } else {
             caloriesInfo.textContent = "Please select an activity and enter a valid duration.";
         }
     }
 
-    // Update activity options when category changes
-    categorySelect.addEventListener("change", function () {
-        const selectedCategory = this.value;
-        populateActivities(selectedCategory);
-    });
-
-    // Attach event listener to the form for calorie calculation
     const form = document.querySelector(".form-box");
     form.addEventListener("submit", calculateCalories);
 
-    // Calculate basal metabolism based on age, weight, and gender
     const calculateBasalMetabolism = function (age, weight, gender) {
         let basalMetabolism = 0;
 
@@ -130,29 +157,24 @@ document.addEventListener("DOMContentLoaded", function () {
         return basalMetabolism;
     };
 
-    // Modal functionality
     const modalTrigger = document.getElementById('modalTrigger');
     const modal = document.getElementById('activityModal');
     const closeBtn = document.getElementsByClassName('close')[0];
 
-    // Function to open the modal
     modalTrigger.onclick = function () {
         modal.style.display = "block";
     }
 
-    // Function to close the modal
     closeBtn.onclick = function () {
         modal.style.display = "none";
     }
 
-    // Close the modal if user clicks outside the modal content
     window.onclick = function (event) {
         if (event.target == modal) {
             modal.style.display = "none";
         }
     };
 
-    // Calculate basal metabolism when "Calculate Basal Metabolism" button is clicked
     const calculateMetabolismBtn = document.getElementById('calculateMetabolism');
     calculateMetabolismBtn.addEventListener('click', function () {
         const age = parseFloat(document.getElementById('age').value);

@@ -5,6 +5,7 @@ const sql = require('mssql');
 const path = require('path');
 const mealController = require('./controllers/mealController');
 const trackerController = require('./controllers/trackerController');
+const activityController = require('./controllers/activityController');
 
 const app = express();
 const port = 3000;
@@ -272,6 +273,9 @@ app.use('/api', mealController);
 
 // Use the tracker controller for tracker-related routes
 app.use('/api', trackerController);
+
+// Use the activity controller for activity-related routes
+app.use('/api', activityController);
 
 // Serve various HTML pages
 app.get('/MealCreator.html', (req, res) => {
