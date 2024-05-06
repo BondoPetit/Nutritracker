@@ -17,32 +17,36 @@
 
     <div class="content">
         <div class="nav-field">
+            <img src="/ablelogo.jpg" alt="ablelogo" class="ablelogo">
             <h1 class="logo">NutriTracker</h1>
         </div>
 
-        <br><br><br><br>
+        <br><br><br><br><br>
+        
         <div class="form-box">
             <h1>Register</h1>
             <form action="/register" method="post">
                 <div class="input-field">
-                    <label for="newEmail">E-mail:</label>
+                    <label class="email" for="newEmail">E-mail:</label>
                     <input type="email" id="newEmail" name="email" required>
                 </div>
                 <div class="input-field">
-                    <label for="newPassword">Adgangskode:</label>
+                    <label class="adgangskode" for="newPassword">Adgangskode:</label>
                     <input type="password" id="newPassword" name="password" required>
                 </div>
                 <button type="submit">Opret bruger</button>
             </form>
 
+            <br><br><br>
+
             <h1>Log ind</h1>
             <form action="/login" method="post">
                 <div class="input-field">
-                    <label for="email">E-mail:</label>
+                    <label class="email" for="email">E-mail:</label>
                     <input type="email" id="email" name="email" required>
                 </div>
                 <div class="input-field">
-                    <label for="password">Adgangskode:</label>
+                    <label class="adgangskode" for="password">Adgangskode:</label>
                     <input type="password" id="password" name="password" required>
                 </div>
                 <button type="submit">Log ind</button>

@@ -1,0 +1,29 @@
+/* Form container */
+.form-box {
+    max-width: 50%;
+    width: 30%; /* Ensure the form box takes full width of its container */
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center; /* Center align all content within the form box */
+    
+    /* Positioning */
+    position: absolute;
+    top: 160%; /* Position the top edge of the form box at 50% of its containing element */
+    left: 50%; /* Position the left edge of the form box at 50% of its containing element */
+    transform: translate(-50%, -50%); /* Center the form box horizontally and vertically */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #fbfbfb;
+
+    margin-top: 7%;
+}
+
+
+.deleteUserBtn {
+background-color: #99D9DE;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    height: 27px;
+    border-radius: 5px;
+}

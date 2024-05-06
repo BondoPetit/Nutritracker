@@ -39,6 +39,17 @@
     overflow: hidden;
 }
 
+button {
+    background-color: #99D9DE;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    height: 27px;
+    border-radius: 5px;
+    width: 100px;
+}
+
 input {
     width: 100%;
     background: transparent;
@@ -48,9 +59,17 @@ input {
     font-size: 20px;
 }
 
-.input-field i {
-    margin-left: 15px;
-    color: #999; /* Use a gray color */
+.email {
+    width: 80px;
+}
+
+.adgangskode {
+    width: 170px;
+}
+
+.input-field {
+    width: 100%;
+    color: black; /* Use a gray color */
 }
 
 form p{
