@@ -4,6 +4,7 @@ const express = require('express');
 const sql = require('mssql');
 const path = require('path');
 const mealController = require('./controllers/mealController');
+const trackerController = require('./controllers/trackerController');
 
 const app = express();
 const port = 3000;
@@ -268,6 +269,9 @@ app.delete('/deleteUser', async (req, res) => {
 
 // Use the meal controller for meal-related routes
 app.use('/api', mealController);
+
+// Use the tracker controller for tracker-related routes
+app.use('/api', trackerController);
 
 // Serve various HTML pages
 app.get('/MealCreator.html', (req, res) => {

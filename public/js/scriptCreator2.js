@@ -36,19 +36,24 @@ function openMealPopup(mealId = null) {
             // Populate ingredients
             tempIngredients.forEach(ingredient => {
                 const inputContainer = document.createElement('div');
+                inputContainer.className = 'ingredient-entry';
+
                 const nameSpan = document.createElement('span');
-                nameSpan.textContent = `${ingredient.name}: `;
+                nameSpan.textContent = `${ingredient.Name}: `;
+
                 const weightInput = document.createElement('input');
                 weightInput.setAttribute('type', 'number');
                 weightInput.setAttribute('placeholder', 'Weight in grams');
                 weightInput.className = 'ingredient-weight-input';
-                weightInput.value = ingredient.weight;
-                weightInput.addEventListener('input', () => updateIngredientWeight(mealId, ingredient.id, weightInput.value)); // Add event listener to update weight
+                weightInput.value = ingredient.Weight;
+                weightInput.addEventListener('input', () => updateIngredientWeight(mealId, ingredient.IngredientID, weightInput.value)); // Add event listener to update weight
+
                 const deleteBtn = document.createElement('button');
                 deleteBtn.textContent = 'Delete';
-                deleteBtn.className = 'delete-btn'; // Add a class name for event delegation
-                deleteBtn.dataset.ingredientId = ingredient.id; // Set data attribute for ingredient ID
-                deleteBtn.addEventListener('click', () => deleteIngredient(mealId, ingredient.id)); // Add event listener to delete ingredient
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.dataset.ingredientId = ingredient.IngredientID;
+                deleteBtn.addEventListener('click', () => deleteIngredient(mealId, ingredient.IngredientID));
+
                 inputContainer.appendChild(nameSpan);
                 inputContainer.appendChild(weightInput);
                 inputContainer.appendChild(deleteBtn);
@@ -72,23 +77,27 @@ function openMealPopup(mealId = null) {
                 }
             });
         }
-
-        // Attach event listener for delete buttons using event delegation
-        ingredientsContainer.addEventListener('click', function (event) {
-            if (event.target.classList.contains('delete-btn')) {
-                const ingredientId = event.target.dataset.ingredientId;
-                deleteIngredient(mealId, ingredientId);
-            }
-        });
     } else {
         console.error("Failed to find elements for opening meal popup");
     }
 }
 
+
 function closeMealPopup() {
     document.getElementById("mealPopUp").style.display = "none";
     clearMealCreatorSearchResults(); // Clear search results for meal creator
     clearDisplayedResults();
+}
+
+
+function updateIngredientWeight(mealId, ingredientId, newWeight) {
+    const mealToEdit = meals.find(meal => meal.MealID === mealId);
+    if (mealToEdit) {
+        const ingredientToEdit = mealToEdit.ingredients.find(ingredient => ingredient.IngredientID === ingredientId);
+        if (ingredientToEdit) {
+            ingredientToEdit.Weight = parseFloat(newWeight);
+        }
+    }
 }
 
 function clearMealCreatorSearchResults() {
