@@ -326,7 +326,6 @@ function fillCurrentDateTime() {
         try {
             const selectedMeal = mealIntakes.find(meal => meal.MealIntakeID === mealId);
             if (!selectedMeal) {
-                document.getElementById('nutritionalDisplay').innerHTML = 'Nutritional data not available.';
                 return;
             }
 

@@ -2,15 +2,14 @@ const express = require('express');
 const sql = require('mssql');
 const router = express.Router();
 
-
 const config = {
     server: 'eksamensprojekt2024.database.windows.net',
     database: 'Login',
     user: 'victoriapedersen',
     password: 'Vict4298',
     options: {
-        encrypt: true
-    }
+        encrypt: true,
+    },
 };
 
 let pool;
@@ -102,7 +101,7 @@ router.post('/saveMealIntake', async (req, res) => {
                 energy: (mealData.Calories / 100) * weight,
                 protein: (mealData.Protein / 100) * weight,
                 fat: (mealData.Fat / 100) * weight,
-                fiber: (mealData.Fiber / 100) * weight
+                fiber: (mealData.Fiber / 100) * weight,
             };
         }
 
@@ -153,18 +152,6 @@ router.post('/saveMealIntake', async (req, res) => {
         res.status(500).json({ error: 'An error occurred while saving the meal intake.' });
     }
 });
-
-
-
-
-
-
-
-
-
-
-
-
 
 // Delete a meal intake
 router.delete('/deleteMealIntake', async (req, res) => {
