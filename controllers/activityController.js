@@ -23,7 +23,10 @@ async function getDbPool() {
 
 // Save or update an activity
 router.post('/saveActivity', async (req, res) => {
-    const { id, userID, activityName, duration, date, time, caloriesBurned } = req.body;
+    const { id, activityName, duration, date, time, caloriesBurned } = req.body;
+    const userIDFromQueryString = req.query.userID;
+    const userID = parseInt(userIDFromQueryString, 10); // Extract and parse userID from request URL
+    
 
     try {
         const pool = await getDbPool();

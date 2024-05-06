@@ -287,8 +287,24 @@ app.get('/MealTracker.html', (req, res) => {
 });
 
 app.get('/Activity.html', (req, res) => {
+    // Log the query string parameters received
+    console.log('Query string:', req.query);
+
+    // Extract userID from the URL query string and parse it as an integer
+    const userID = parseInt(req.query.userID, 10);
+
+    // Check if userID is a valid number
+    if (isNaN(userID)) {
+        return res.status(400).send('Invalid userID');
+    }
+
+    // Log the parsed userID
+    console.log('Parsed userID:', userID);
+
+    // Send Activity.html as response
     res.sendFile(path.join(__dirname, 'views', 'Activity.html'));
 });
+
 
 app.get('/DailyNutri.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'DailyNutri.html'));
