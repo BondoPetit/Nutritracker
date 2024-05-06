@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const calculateBasalMetabolism = function (age, weight, gender) {
         let basalMetabolism = 0;
 
-        if (gender === 'female') {
+        if (gender === 'Female') {
             if (age < 3) {
                 basalMetabolism = (0.244 * weight) - 0.13;
             } else if (age >= 4 && age <= 10) {
@@ -109,7 +109,7 @@ document.addEventListener("DOMContentLoaded", function () {
             } else if (age > 75) {
                 basalMetabolism = (0.0410 * weight) + 2.61;
             }
-        } else if (gender === 'male') {
+        } else if (gender === 'Male') {
             if (age < 3) {
                 basalMetabolism = (0.249 * weight) - 0.13;
             } else if (age >= 4 && age <= 10) {

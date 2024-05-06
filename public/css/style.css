@@ -6,39 +6,38 @@ body {
     /* Required for absolute positioning within the body */
 }
 
-.overskrifter {
-    display: flex;
-    justify-content: space-between;
-    color: #9E9E9E;
-}
-
 .nav-field {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
 }
 
-.logo {
-    text-decoration: none;
-    color: #91c789;
-    align-self: center;
+.background-image {
+    width: 100%;
+    height: 160px;
+    position: absolute;
+    z-index: -1;
 }
 
-.logo,
-h3 {
-    margin: 0;
-    /* Remove default margins */
-    padding: 10px;
-    /* Keep padding for spacing */
+.ablelogo {
+    width: 2%;
+    position: absolute;
+    z-index: -1;
+    margin-top: 28px;
+    margin-left: 25px;
 }
 
-h1,
-h3 {
-    display: inline-block;
-    margin: 100px;
-    /* Remove margin to prevent extra space */
+.overskrifter {
+    font-size: 20px;
+    margin-right: 70px;
     margin-top: 40px;
-    align-self: center;
+}
+
+.overskrifter-tabel {
+    display: flex;
+    justify-content: space-between;
+    color: #9E9E9E;
+    margin-left: 150px;
+    margin-right: 30px;
 }
 
 h1 {
@@ -50,35 +49,31 @@ h2 {
     font-size: 32px;
 }
 
+
+.logo {
+    text-decoration: none;
+    color: #91c789;
+    margin-left: 80px;
+    margin-right: 100px;
+}
+
 h3 a {
     text-decoration: none;
     color: #757575;
-    padding: 5px 10px;
-    /* Add padding around links */
-}
-
-h3 {
-    font-size: 28px;
-}
-
-.background-image {
-    width: 100%;
-    height: 200px;
-    position: absolute;
-    z-index: -1;
+    
 }
 
 h3 a.active {
     padding: 5px 10px;
     border-radius: 5px;
     background-color: #91c789;
-    /* Choose a background color for the active link */
     color: #ffffff;
-    /* Choose a text color for the active link */
 }
 
 
 
+
+/* til vores JS*/
 .under-container {
     width: 1000px; /* Angivet med enheden px */
     max-width: 90%; /* Justeret for responsivitet */
@@ -90,8 +85,6 @@ h3 a.active {
     color: #030303;
     position: relative; /* Make the under-container a reference for absolute positioning */
 }
-
-
 
 .book-icon {
     border: none;
@@ -126,7 +119,6 @@ h3 a.active {
     color: rgba(255, 98, 70, 0.932);
 }
 
-
 .book-icon:hover,
 .delete-button:hover {
     opacity: 0.7;
@@ -144,4 +136,3 @@ h3 a.active {
 .delete-button {
     color: rgba(255, 98, 70, 0.932);
 }
-

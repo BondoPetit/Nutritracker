@@ -16,13 +16,15 @@
 
     <div class="content">
         <div class="nav-field">
+            <img src="/ablelogo.jpg" alt="ablelogo" class="ablelogo">
             <h1 class="logo">NutriTracker</h1>
-            <h3><a href="/MealCreator.html" class="active">Meal Creator</a></h3>
-            <h3><a href="/MealTracker.html">Meal Tracker</a></h3>
-            <h3><a href="/Activity.html">Activity Tracker</h3>
-            <h3><a href="/DailyNutri.html">Daily Nutri</a></h3>
-            <h3><a href="/MyStats.html">Stats</a></h3>
+            <h3 class="overskrifter"><a href="/MealCreator.html" class="active">Meal Creator</a></h3>
+            <h3 class="overskrifter"><a href="/MealTracker.html">Meal Tracker</a></h3>
+            <h3 class="overskrifter"><a href="/Activity.html">Activity Tracker</a></h3>
+            <h3 class="overskrifter"><a href="/DailyNutri.html">Daily Nutri</a></h3>
+            <h3 class="overskrifter"><a href="/MyStats.html">My Stats</a></h3>
         </div>
+        
 
         <br><br><br><br>
 
@@ -30,15 +32,6 @@
             <div class="under-container">
                 <div class="buttons-title">
                     <h2>Meal Creator</h2>
-
-                    <div class="search-container">
-                        <input type="text" id="searchInputAll" placeholder="Search for ingredients">
-                        <button id="searchButtonAll">Search</button>
-                        <div id="searchResultsContainerAll">
-                            <!-- Dynamically generated search results will go here -->
-                        </div>
-                    </div>
-
                     <div class="add-buttons">
                         <div class="addMeal">
                             <div class="button-container" onclick="openMealPopup()">+</div>
@@ -50,7 +43,16 @@
                     </div>
                 </div>
 
-                <div class="overskrifter">
+                <div class="search-container">
+                    <input type="text" id="searchInputAll" placeholder="Search for ingredients">
+                    <button id="searchButtonAll">Search</button>
+                    <div id="searchResultsContainerAll">
+                        <!-- Dynamically generated search results will go here -->
+                    </div>
+                </div>
+
+
+                <div class="overskrifter-tabel">
                     <h4 class="MealName">Meal Name</h4>
                     <h4 class="Kcal">Total Kcal pr. 100g</h4>
                     <h4 class="Added">Added on</h4>
@@ -61,7 +63,7 @@
                 <div class="måltid">
                     <div class="meals-container">
                         <!-- Meals will be appended here by the script -->
-                        <!-- Add the following HTML for ingredient count and total energy -->
+                        <!-- Add the followisng HTML for ingredient count and total energy -->
                         <div class="meal-info">
                             Ingredients: 0, Total Energy: 0.00 kcal
                         </div>
@@ -109,6 +111,7 @@
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>

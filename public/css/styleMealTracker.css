@@ -2,9 +2,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-bottom: 20px;
 }
-
-
 
 .buttons-title {
     display: flex;
@@ -16,6 +15,7 @@
     top: 20px; /* Adjust top position as needed */
     right: 0; /* Adjust right position as needed */
     display: flex;
+    margin-right: 30px;
 }
 
 .addMeal, .addLiquid {
@@ -27,28 +27,23 @@
     justify-content: center;
     background-color: transparent;
     cursor: pointer;
-    color: #fff; /* Change button text color to white */
+    color: white;
 }
 
 .addMeal {
     background-color: #569BD5;
-    margin-right: 10px;
+    margin-top: 30px;
+    margin-right: 5px;
 }
 
 .addLiquid {
     background-color: #91c789;
-    margin-right: 10px;
+    margin-top: 30px;
 }
 
 .plus {
     color: #fff;
     font-size: 220%;
-}
-
-.overskrifter {
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .overskrifter h4 {
