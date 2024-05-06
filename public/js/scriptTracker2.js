@@ -1,19 +1,36 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const userID = getUserIDFromURL(); // Add a function to extract userID from URL
+    const userID = getUserIDFromURL();
     let mealIntakes = [];
+    let meals = [];
 
     function getUserIDFromURL() {
         const urlParams = new URLSearchParams(window.location.search);
         return parseInt(urlParams.get('userID'), 10);
     }
 
+    // Fetch all meals for the current user
+    async function fetchMeals() {
+        try {
+            const response = await fetch(`/api/getMeals?userID=${userID}`);
+            meals = await response.json();
+        } catch (error) {
+            console.error("Error fetching meals:", error);
+            alert("An error occurred while fetching meals. Please try again.");
+        }
+    }
+
     // Fetch all meal intakes for the current user
     function fetchMealIntakes() {
         fetch(`/api/getMealIntakes?userID=${userID}`)
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch meal intakes');
+                }
+                return response.json();
+            })
             .then(data => {
                 mealIntakes = data;
-                displayMeals(); // Update the displayed meals
+                displayMeals();
             })
             .catch(error => {
                 console.error("Error fetching meal intakes:", error);
@@ -22,9 +39,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Open the tracker modal
-    window.trackerPopup = function (editMode = false, recordId = null) {
+    window.trackerPopup = async function (editMode = false, recordId = null) {
         document.getElementById('mealPopUp').style.display = 'block';
-        populateTrackerModal(editMode, recordId);
+        await populateTrackerModal(editMode, recordId);
         fillCurrentDateTime();
         fetchCurrentLocation();
     };
@@ -39,29 +56,42 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById('nutritionalDetailsModal').style.display = 'none';
     };
 
+
     // Save the tracker data
     window.saveTracker = function () {
-        const mealName = document.getElementById('mealName').value;
+        const mealID = parseInt(document.getElementById('mealName').value, 10);
+        const mealName = document.getElementById('mealName').selectedOptions[0].textContent;
         const mealWeight = parseFloat(document.getElementById('mealWeight').value);
         const intakeDate = document.getElementById('intakeDate').value;
-        const intakeTime = document.getElementById('intakeTime').value;
+        // Format time to "HH:mm:ss"
+        let intakeTime = document.getElementById('intakeTime').value;
+        intakeTime = intakeTime.length === 5 ? `${intakeTime}:00` : intakeTime;
         const location = document.getElementById('location').value;
 
+
+
         // Calculate nutritional data based on the selected meal and its weight
-        const selectedMeal = mealIntakes.find(meal => meal.MealName === mealName);
+        const selectedMeal = meals.find(meal => meal.MealID === mealID);
         const nutritionalData = calculateNutritionalData(selectedMeal, mealWeight);
+
+        // Check if nutritional data is available
+        if (!nutritionalData || !nutritionalData.energy) {
+            alert("Missing nutritional information for selected meal.");
+            console.error("Missing nutritional information for selected meal:", selectedMeal);
+            return;
+        }
 
         // Construct the new record object including nutritional data
         const newRecord = {
             id: selectedMeal ? selectedMeal.MealIntakeID : null,
-            userID: userID,
-            mealID: selectedMeal ? selectedMeal.MealID : null,
-            name: mealName,
+            userID: selectedMeal.UserID,
+            mealID: selectedMeal.MealID,
+            name: selectedMeal.Name,
             weight: mealWeight,
             date: intakeDate,
             time: intakeTime,
             location: location,
-            nutritionalData: nutritionalData // Include the calculated nutritional data
+            nutritionalData: nutritionalData
         };
 
         fetch('/api/saveMealIntake', {
@@ -75,7 +105,7 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(data => {
                 if (data.success) {
                     closeTrackerPopup();
-                    fetchMealIntakes(); // Refresh the list of meals
+                    fetchMealIntakes();
                 } else {
                     throw new Error('Failed to save the meal intake');
                 }
@@ -86,69 +116,97 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     };
 
+
+
+
+
     // Fetch and fill the current date and time
     function fillCurrentDateTime() {
         const now = new Date();
         const dateInput = document.getElementById('intakeDate');
         const timeInput = document.getElementById('intakeTime');
 
-        // Ensure the format is YYYY-MM-DD for the date input to recognize it
-        dateInput.value = now.toISOString().split('T')[0]; // Set in YYYY-MM-DD format
-        timeInput.value = now.toTimeString().slice(0, 5); // HH:MM
+        if (dateInput && timeInput) {
+            dateInput.value = now.toISOString().split('T')[0];
+            timeInput.value = now.toTimeString().slice(0, 5);
+        }
     }
 
     // Fetch the current location
     function fetchCurrentLocation() {
-        if (navigator.geolocation) {
+        const locationInput = document.getElementById('location');
+        if (locationInput && navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(function (position) {
-                const locationInput = document.getElementById('location');
                 locationInput.value = `Lat: ${position.coords.latitude}, Long: ${position.coords.longitude}`;
             }, function (error) {
                 console.error(error);
+                alert("Error fetching location. Please allow location access and try again.");
+            }, {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
             });
+        } else {
+            if (locationInput) {
+                locationInput.value = 'Geolocation not supported';
+            }
+            alert("Geolocation is not supported by this browser.");
         }
     }
 
     // Populate the tracker modal with form inputs for intake tracking
-    function populateTrackerModal(editMode, recordId = null) {
-        const modalContent = document.querySelector('#mealPopUp .modal-content');
-        const savedMeals = mealIntakes;
-        const mealSelectorHTML = savedMeals.map(meal => `<option value="${meal.MealName}">${meal.MealName}</option>`).join('');
+    async function populateTrackerModal(editMode, recordId = null) {
+        try {
+            // Fetch meals
+            await fetchMeals();
 
-        modalContent.innerHTML = `<span class="close" onclick="closeTrackerPopup()">&times;</span>
-        <h2>${editMode ? 'Edit' : 'Add'} Meal Intake</h2>
-        <form id="mealIntakeForm">
-            <label for="mealName">Meal Name:</label>
-            <select id="mealName" name="mealName">${mealSelectorHTML}</select>
-            <label for="mealWeight">Weight (g):</label>
-            <input type="number" id="mealWeight" name="mealWeight" placeholder="Enter weight" required>
-            <label for="intakeDate">Date:</label>
-            <input type="date" id="intakeDate" name="intakeDate" required>
-            <label for="intakeTime">Time:</label>
-            <input type="time" id="intakeTime" name="intakeTime" required>
-            <label for="location">Location:</label>
-            <input type="text" id="location" name="location" placeholder="Fetching location..." readonly>
-            <div id="nutritionalDisplay"></div> <!-- Nutritional data display -->
-            <button type="button" onclick="saveTracker()">Save Meal Intake</button>
-        </form>`;
+            // Create options for the meal selector
+            const mealSelectorHTML = meals.map(meal => `<option value="${meal.MealID}">${meal.Name}</option>`).join('');
 
-        // Pre-fill the form for editing mode
-        if (editMode && recordId !== null) {
-            const record = savedMeals.find(record => record.MealIntakeID === recordId);
-            if (record) {
-                document.getElementById('mealName').value = record.MealName;
-                document.getElementById('mealWeight').value = record.Weight;
-                document.getElementById('intakeDate').value = record.IntakeDate;
-                document.getElementById('intakeTime').value = record.IntakeTime;
-                document.getElementById('location').value = record.Location;
+            // Construct the tracker modal
+            const modalContent = document.querySelector('#mealPopUp .modal-content');
+            modalContent.innerHTML = `<span class="close" onclick="closeTrackerPopup()">&times;</span>
+            <h2>${editMode ? 'Edit' : 'Add'} Meal Intake</h2>
+            <form id="mealIntakeForm">
+                <label for="mealName">Meal Name:</label>
+                <select id="mealName" name="mealName">${mealSelectorHTML}</select>
+                <label for="mealWeight">Weight (g):</label>
+                <input type="number" id="mealWeight" name="mealWeight" placeholder="Enter weight" required>
+                <label for="intakeDate">Date:</label>
+                <input type="date" id="intakeDate" name="intakeDate" required>
+                <label for="intakeTime">Time:</label>
+                <input type="time" id="intakeTime" name="intakeTime" required>
+                <label for="location">Location:</label>
+                <input type="text" id="location" name="location" placeholder="Fetching location..." readonly>
+                <div id="nutritionalDisplay"></div> <!-- Nutritional data display -->
+                <button type="button" onclick="saveTracker(${recordId})">Save Meal Intake</button>
+            </form>`;
+
+            // If in edit mode, populate fields with existing data
+            if (editMode && recordId !== null) {
+                const response = await fetch(`/api/getMealIntake?id=${recordId}`);
+                const record = await response.json();
+
+                const mealNameElem = document.getElementById('mealName');
+                const mealWeightElem = document.getElementById('mealWeight');
+                const intakeDateElem = document.getElementById('intakeDate');
+                const intakeTimeElem = document.getElementById('intakeTime');
+                const locationElem = document.getElementById('location');
+
+                if (mealNameElem) mealNameElem.value = record.MealID || '';
+                if (mealWeightElem) mealWeightElem.value = record.Weight || '';
+                if (intakeDateElem) intakeDateElem.value = record.IntakeDate.split('T')[0] || '';
+                if (intakeTimeElem) intakeTimeElem.value = record.IntakeTime.split('T')[1].substring(0, 5) || '';
+                if (locationElem) locationElem.value = record.Location || '';
             }
-        }
 
-        // Call the setupMealSelectionChange function to ensure the meal selection change listener is set up
-        setupMealSelectionChange();
+            setupMealSelectionChange();
+        } catch (error) {
+            console.error('Error fetching meals:', error);
+        }
     }
 
-    // Display the meals from localStorage
+    // Display the meals from database
     function displayMeals() {
         const recordsContainer = document.getElementById('recordsContainer');
 
@@ -158,54 +216,45 @@ document.addEventListener("DOMContentLoaded", function () {
         // Iterate over records and append them to the container
         mealIntakes.forEach(record => {
             const recordElement = document.createElement('div');
-            recordElement.classList.add('mealRecord'); // Apply the styling class to each record
-            recordElement.dataset.recordId = record.MealIntakeID; // Set dataset attribute
+            recordElement.classList.add('mealRecord');
+            recordElement.dataset.recordId = record.MealIntakeID;
 
-            // Create elements for the text and buttons separately
             const textElement = document.createElement('p');
             textElement.textContent = `${record.MealName}  ${record.Weight}g  ${record.IntakeDate}  ${record.IntakeTime} Location: ${record.Location}`;
-            recordElement.appendChild(textElement); // Append text to record element
+            recordElement.appendChild(textElement);
 
-            // Create buttons container
             const buttonsContainer = document.createElement('div');
             buttonsContainer.classList.add('buttons-container');
 
-            // Create edit button
             const editButton = document.createElement('button');
             editButton.classList.add('edit-button');
             editButton.innerHTML = '<i class="fas fa-pencil-alt edit-icon"></i>';
             editButton.addEventListener('click', function () {
                 editMealRecord(record.MealIntakeID);
             });
-            buttonsContainer.appendChild(editButton); // Append edit button to buttons container
+            buttonsContainer.appendChild(editButton);
 
-            // Create delete button
             const deleteButton = document.createElement('button');
             deleteButton.classList.add('delete-button');
             deleteButton.innerHTML = '<i class="fas fa-trash-alt delete-icon"></i>';
             deleteButton.addEventListener('click', function () {
                 deleteMealRecord(record.MealIntakeID);
             });
-            buttonsContainer.appendChild(deleteButton); // Append delete button to buttons container
+            buttonsContainer.appendChild(deleteButton);
 
-            // Create nutritional data button
             const nutritionalDataButton = document.createElement('button');
             nutritionalDataButton.classList.add('show-nutritional-data-button');
-            nutritionalDataButton.innerHTML = '<i class="fas fa-book book-icon"></i>'; // Add "book-icon" class here
+            nutritionalDataButton.innerHTML = '<i class="fas fa-book book-icon"></i>';
             nutritionalDataButton.dataset.recordId = record.MealIntakeID;
             nutritionalDataButton.addEventListener('click', function () {
                 showNutritionalData(record.MealIntakeID);
             });
-            buttonsContainer.appendChild(nutritionalDataButton); // Append nutritional data button to buttons container
+            buttonsContainer.appendChild(nutritionalDataButton);
 
-            // Append buttons container to record element
             recordElement.appendChild(buttonsContainer);
-
-            // Append record element to records container
             recordsContainer.appendChild(recordElement);
         });
 
-        // Add event listener to handle edit button clicks
         recordsContainer.addEventListener('click', function (event) {
             if (event.target.classList.contains('edit-icon')) {
                 const recordId = parseInt(event.target.closest('.mealRecord').dataset.recordId);
@@ -214,32 +263,28 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Function to handle meal selection change and display nutritional data
     function setupMealSelectionChange() {
         const mealSelector = document.getElementById('mealName');
         const mealWeightInput = document.getElementById('mealWeight');
         if (mealSelector && mealWeightInput) {
             mealSelector.addEventListener('change', function () {
-                const selectedMealName = this.value;
-                const selectedMeal = mealIntakes.find(meal => meal.MealName === selectedMealName);
+                const selectedMealID = parseInt(this.value, 10);
+                const selectedMeal = meals.find(meal => meal.MealID === selectedMealID);
 
                 if (selectedMeal) {
-                    // Display nutritional data only if weight is provided
                     if (mealWeightInput.value.trim() !== '') {
-                        displayNutritionalData(selectedMeal.MealIntakeID, parseFloat(mealWeightInput.value)); // Display nutritional data for the selected meal
+                        displayNutritionalData(selectedMeal.MealIntakeID, parseFloat(mealWeightInput.value));
                     }
                 }
             });
 
-            // Listen for changes in meal weight input
             mealWeightInput.addEventListener('input', function () {
-                const selectedMealName = mealSelector.value;
-                const selectedMeal = mealIntakes.find(meal => meal.MealName === selectedMealName);
+                const selectedMealID = parseInt(mealSelector.value, 10);
+                const selectedMeal = meals.find(meal => meal.MealID === selectedMealID);
 
                 if (selectedMeal) {
-                    // Display nutritional data only if weight is provided
                     if (this.value.trim() !== '') {
-                        displayNutritionalData(selectedMeal.MealIntakeID, parseFloat(this.value)); // Display nutritional data for the selected meal
+                        displayNutritionalData(selectedMeal.MealIntakeID, parseFloat(this.value));
                     }
                 }
             });
@@ -248,7 +293,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Call to setup meal selection change listener
     setupMealSelectionChange();
 
     function showNutritionalData(recordId) {
@@ -284,30 +328,41 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             // Validate mealWeight as a number
-            const validMealWeight = parseFloat(mealWeight);
-            if (isNaN(validMealWeight) || validMealWeight <= 0) {
-                document.getElementById('nutritionalDisplay').innerHTML = 'Invalid meal weight.';
+            const validMealWeight = parsefloat(mealWeight);
+            if (isnan(validMealWeight) || validMealWeight <= 0) {
+                document.getElementByid('nutritionaldisplay').innerhtml = 'Invalid meal weight.';
                 return;
             }
 
-            // Calculate nutritional values
-            const nutritionalData = calculateNutritionalData(selectedMeal, validMealWeight);
+            // calculate nutritional values
+            const nutritionaldata = calculatenutritionaldata(selectedmeal, validmealweight);
 
-            // Display the calculated nutritional data
-            document.getElementById('nutritionalDisplay').innerHTML = `
+            // display the calculated nutritional data
+            document.getElementByid('nutritionaldisplay').innerhtml = `
                 <p class="nutritional-text">Nutritional Data for: ${selectedMeal.MealName}</p>
-                <p class="nutritional-text">Energy: ${nutritionalData.energy.toFixed(2)} kcal, Protein: ${nutritionalData.protein.toFixed(2)}g, Fat: ${nutritionalData.fat.toFixed(2)}g, Fiber: ${nutritionalData.fiber.toFixed(2)}g</p>
+                <p class="nutritional-text">Energy: ${nutritionaldata.energy.tofixed(2)} kcal, Protein: ${nutritionaldata.protein.tofixed(2)}g, Fat: ${nutritionaldata.fat.tofixed(2)}g, Fiber: ${nutritionaldata.fiber.tofixed(2)}g</p>
             `;
         } catch (error) {
             console.error('Error displaying nutritional data:', error);
-            document.getElementById('nutritionalDisplay').innerHTML = 'Error loading nutritional data.';
+            document.getElementByid('nutritionaldisplay').innerhtml = 'Error loading nutritional data.';
         }
     }
 
+    // Improved calculateNutritionalData function with error handling
     function calculateNutritionalData(selectedMeal, mealWeight) {
+        if (!selectedMeal || !mealWeight) {
+            return null;
+        }
+
+        // Ensure the selectedMeal contains the necessary nutritional info
+        if (selectedMeal.Calories === undefined || selectedMeal.Protein === undefined || selectedMeal.Fat === undefined || selectedMeal.Fiber === undefined) {
+            console.error("Invalid meal selected:", selectedMeal);
+            return null;
+        }
+
         const calculatedValues = {};
 
-        // Calculate nutritional values based on meal weight in Meal Tracker and Meal Creator
+        // Calculate nutritional values based on meal weight
         calculatedValues.energy = (selectedMeal.Calories / 100) * mealWeight;
         calculatedValues.protein = (selectedMeal.Protein / 100) * mealWeight;
         calculatedValues.fat = (selectedMeal.Fat / 100) * mealWeight;
@@ -336,12 +391,9 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     };
 
-    // Define the editMealRecord function
     window.editMealRecord = function (mealIntakeID) {
-        // Populate the tracker modal with the record details for editing
-        trackerPopup(true, mealIntakeID); // Set editMode to true and pass mealIntakeID
+        trackerPopup(true, mealIntakeID);
     };
 
-    // Fetch and display meal intakes on initial load
     fetchMealIntakes();
 });
