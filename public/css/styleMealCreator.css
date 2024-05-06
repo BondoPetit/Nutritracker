@@ -11,6 +11,27 @@
     align-items: center;
 }
 
+.MealName {
+    margin-left: -80px;
+}
+
+.Kcal {
+    margin-left: -60px;
+}
+
+.Added{
+    margin-left: -60px;
+}
+
+.Ingredients {
+    margin-left: -60px;
+}
+
+.Eaten {
+    margin-left: -60px;
+    margin-right: 120px;
+}
+
 .add-buttons {
     position: absolute; /* Fix the position of the buttons */
     top: 20px; /* Adjust top position as needed */
@@ -66,12 +87,26 @@
 }
 
 .meals-container .meal-name {
-    margin-left: 14%; /* Adjust the margin as needed */
+    margin-left: 5%; /* Adjust the margin as needed */
 }
 
-.saved-number{
-    margin-right: 10px; /* Adjust the value as needed for proper spacing */
-}
+  /* CSS to adjust the position of the number of ingredients */
+  .ingredient-count {
+    position: absolute; /* Position absolutely within its parent */
+    margin-left: 54%; 
+  }  
+
+  .total-kcal-per-100-grams {
+    position: absolute;
+    margin-left: 24%; 
+  }
+
+  /* CSS to adjust the position of the "Added On" date */
+.creation-date {
+    position: absolute;
+    margin-left: 39%; 
+  }
+
 
 .saved-meal {
     margin-left: 210px;
@@ -136,6 +171,8 @@
     margin: 5px;
     color: black;
   }
+
+ 
 
 .saved-ingredient-count {
   margin-left: 500px;
