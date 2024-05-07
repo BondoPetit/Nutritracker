@@ -60,66 +60,66 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    const categorySelect = document.getElementById("category");
-    categorySelect.addEventListener("change", function () {
-        const selectedCategory = this.value;
-        populateActivities(selectedCategory);
-    });
-
-    const activitySelect = document.getElementById("activity");
-    const durationInput = document.getElementById("duration");
-    const dateInput = document.getElementById("date");
-    const timeInput = document.getElementById("time");
-    const caloriesInfo = document.getElementById("caloriesInfo");
-
-   // Calculate calories based on selected activity and duration
-async function calculateCalories(event) {
-    event.preventDefault();
-    const selectedActivity = parseFloat(activitySelect.value); // Get selected activity's kcal/h value
-    const duration = parseFloat(durationInput.value); // Get duration in minutes
-    const caloriesBurned = (selectedActivity / 60) * duration; // Calculate calories burned
-
-    if (!isNaN(caloriesBurned)) {
-        caloriesInfo.textContent = `Calories burned: ${caloriesBurned.toFixed(2)} kcal`;
-
-        // Retrieve or set userID
-        const userID = 19; // Replace with the actual user ID or retrieve dynamically
-
-        // Save to server
-        const data = {
-            userID: userID,
-            activityName: activitySelect.options[activitySelect.selectedIndex].textContent,
-            duration: duration,
-            date: dateInput.value,
-            time: timeInput.value,
-            caloriesBurned: caloriesBurned.toFixed(2)
-        };
-
-        await fetch('/api/saveActivity?userID=' + userID, { // Include userID in the URL as well
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data),
-        }).then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    console.log('Activity saved successfully.');
-                } else {
-                    console.error('Failed to save activity:', data.error);
-                }
-            }).catch(error => {
-                console.error('Error saving activity:', error);
-            });
-
-    } else {
-        caloriesInfo.textContent = "Please select an activity and enter a valid duration.";
-    }
-}
-
-
-    const form = document.querySelector(".form-box");
-    form.addEventListener("submit", calculateCalories);
+     // Extract userID from URL
+     const urlParams = new URLSearchParams(window.location.search);
+     const userID = parseInt(urlParams.get("userID"), 10);
+ 
+     const categorySelect = document.getElementById("category");
+     categorySelect.addEventListener("change", function () {
+         const selectedCategory = this.value;
+         populateActivities(selectedCategory);
+     });
+ 
+     const activitySelect = document.getElementById("activity");
+     const durationInput = document.getElementById("duration");
+     const dateInput = document.getElementById("date");
+     const timeInput = document.getElementById("time");
+     const caloriesInfo = document.getElementById("caloriesInfo");
+ 
+     // Calculate calories based on selected activity and duration
+     async function calculateCalories(event) {
+         event.preventDefault();
+         const selectedActivity = parseFloat(activitySelect.value); // Get selected activity's kcal/h value
+         const duration = parseFloat(durationInput.value); // Get duration in minutes
+         const caloriesBurned = (selectedActivity / 60) * duration; // Calculate calories burned
+ 
+         if (!isNaN(caloriesBurned)) {
+             caloriesInfo.textContent = `Calories burned: ${caloriesBurned.toFixed(2)} kcal`;
+ 
+             // Save to server
+             const data = {
+                 userID: userID,
+                 activityName: activitySelect.options[activitySelect.selectedIndex].textContent,
+                 duration: duration,
+                 date: dateInput.value,
+                 time: timeInput.value,
+                 caloriesBurned: caloriesBurned.toFixed(2)
+             };
+ 
+             await fetch('/api/saveActivity?userID=' + userID, { // Include userID in the URL as well
+                 method: 'POST',
+                 headers: {
+                     'Content-Type': 'application/json',
+                 },
+                 body: JSON.stringify(data),
+             }).then(response => response.json())
+                 .then(data => {
+                     if (data.success) {
+                         console.log('Activity saved successfully.');
+                     } else {
+                         console.error('Failed to save activity:', data.error);
+                     }
+                 }).catch(error => {
+                     console.error('Error saving activity:', error);
+                 });
+ 
+         } else {
+             caloriesInfo.textContent = "Please select an activity and enter a valid duration.";
+         }
+     }
+ 
+     const form = document.querySelector(".form-box");
+     form.addEventListener("submit", calculateCalories);
 
      // Calculate basal metabolism based on age, weight, and gender
      const calculateBasalMetabolism = function (age, weight, gender) {
