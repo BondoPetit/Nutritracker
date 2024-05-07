@@ -30,7 +30,7 @@ router.get('/getMealIntakes', async (req, res) => {
         const result = await pool.request()
             .input('userID', sql.Int, userID)
             .query(`
-                SELECT mi.MealIntakeID, mi.UserID, mi.MealID, m.Name AS MealName, mi.Weight, mi.IntakeDate, mi.IntakeTime, mi.Location, mi.Calories, mi.Protein, mi.Fat, mi.Fiber
+                SELECT mi.MealIntakeID, mi.UserID, mi.MealID, m.Name AS MealName, mi.Weight, CONVERT(date, mi.IntakeDate) AS IntakeDate, mi.IntakeTime, mi.Location, mi.Calories, mi.Protein, mi.Fat, mi.Fiber
                 FROM MealIntakes mi
                 INNER JOIN Meals m ON mi.MealID = m.MealID
                 WHERE mi.UserID = @userID
@@ -52,7 +52,7 @@ router.get('/getMealIntake', async (req, res) => {
         const result = await pool.request()
             .input('mealIntakeID', sql.Int, mealIntakeID)
             .query(`
-                SELECT MealIntakeID, UserID, MealID, MealName, Weight, IntakeDate, IntakeTime, Location, Calories, Protein, Fat, Fiber
+                SELECT MealIntakeID, UserID, MealID, MealName, Weight, CONVERT(date, IntakeDate) AS IntakeDate, IntakeTime, Location, Calories, Protein, Fat, Fiber
                 FROM MealIntakes
                 WHERE MealIntakeID = @mealIntakeID
             `);
