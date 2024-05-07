@@ -193,13 +193,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const metabolismResult = document.getElementById('metabolismResult');
         if (!isNaN(age) && !isNaN(weight)) {
-            const basalMetabolism = calculateBasalMetabolism(age, weight, gender);
-            metabolismResult.textContent = `Basal Metabolism: ${basalMetabolism.toFixed(2)} kcal/day`;
+            // Calculate basal metabolism in MJ/day
+            const basalMetabolismMJ = calculateBasalMetabolism(age, weight, gender);
+            // Convert basal metabolism to kcal/day
+            const basalMetabolismKcal = basalMetabolismMJ * 238.845896627;
+
+            metabolismResult.textContent = `Basal Metabolism: ${basalMetabolismKcal.toFixed(2)} kcal/day`;
 
             // Save basal metabolism for user
             const data = {
                 userID: userID,
-                basalMetabolism: basalMetabolism.toFixed(2)
+                basalMetabolism: basalMetabolismKcal.toFixed(2)
             };
 
             await fetch('/api/saveBasalMetabolism', {
@@ -223,4 +227,5 @@ document.addEventListener("DOMContentLoaded", function () {
             metabolismResult.textContent = 'Please enter valid age and weight.';
         }
     });
+
 });

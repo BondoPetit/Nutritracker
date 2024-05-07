@@ -5,7 +5,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function fetchNutritionalIntake(url) {
         const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
+        if (!Array.isArray(data)) {
+            throw new Error(`Unexpected response format: ${JSON.stringify(data)}`);
+        }
         return data;
     }
 
@@ -30,8 +36,13 @@ document.addEventListener("DOMContentLoaded", function () {
             url = `/api/getDailyNutriMonth?userID=${userID}`;
         }
 
-        const data = await fetchNutritionalIntake(url);
-        displayNutritionalIntake(data, 'dailyNutriContainer');
+        try {
+            const data = await fetchNutritionalIntake(url);
+            displayNutritionalIntake(data, 'dailyNutriContainer');
+        } catch (error) {
+            console.error("Error displaying nutritional intake:", error);
+            document.getElementById('dailyNutriContainer').textContent = `Error: ${error.message}`;
+        }
     }
 
     // Event listeners for the view type buttons
