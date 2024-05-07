@@ -83,7 +83,7 @@ router.post('/saveMealIntake', async (req, res) => {
         // Convert the time string into a Date object
         const [hours, minutes, seconds] = time.split(':');
         let intakeHour = parseInt(hours, 10);
-        intakeHour += 1; // Add one hour
+       
 
         // Ensure the hour value stays within the range of 0-23
         intakeHour = intakeHour % 24;

@@ -57,59 +57,61 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
 
-    // Save the tracker data
-    window.saveTracker = function () {
-        const mealID = parseInt(document.getElementById('mealName').value, 10);
-        const mealName = document.getElementById('mealName').selectedOptions[0].textContent;
-        const mealWeight = parseFloat(document.getElementById('mealWeight').value);
-        const intakeDate = document.getElementById('intakeDate').value;
-        let intakeTime = document.getElementById('intakeTime').value;
-        const location = document.getElementById('location').value;
+   // Save the tracker data
+   window.saveTracker = function () {
+    const mealID = parseInt(document.getElementById('mealName').value, 10);
+    const mealName = document.getElementById('mealName').selectedOptions[0].textContent;
+    const mealWeight = parseFloat(document.getElementById('mealWeight').value);
+    const intakeDate = document.getElementById('intakeDate').value;
+    let intakeTime = document.getElementById('intakeTime').value;
+    const location = document.getElementById('location').value;
 
-        // Fetch UserID from the URL
-        const userID = getUserIDFromURL();
+    // Fetch UserID from the URL
+    const userID = getUserIDFromURL();
 
-        // Check if the record is for editing or adding a new intake
-        const editMode = document.getElementById('mealIntakeForm').getAttribute('data-edit-mode') === 'true';
+    // Check if the record is for editing or adding a new intake
+    const editMode = document.getElementById('mealIntakeForm').getAttribute('data-edit-mode') === 'true';
 
-        // Construct the new record object
-        const newRecord = {
-            userID: userID, // Include the UserID
-            mealID: mealID,
-            name: mealName,
-            weight: mealWeight,
-            date: intakeDate,
-            time: intakeTime,
-            location: location,
-        };
-
-        // If in edit mode, include the intake ID in the record
-        if (editMode) {
-            newRecord.id = parseInt(document.getElementById('mealIntakeForm').getAttribute('data-record-id'));
-        }
-
-        // Save the record
-        fetch('/api/saveMealIntake', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(newRecord)
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    closeTrackerPopup();
-                    fetchMealIntakes();
-                } else {
-                    throw new Error('Failed to save the meal intake');
-                }
-            })
-            .catch(error => {
-                console.error('Error saving the meal intake:', error);
-                alert('An error occurred while saving the meal intake. Please try again.');
-            });
+    // Construct the new record object
+    const newRecord = {
+        userID: userID, // Include the UserID
+        mealID: mealID,
+        name: mealName,
+        weight: mealWeight,
+        date: intakeDate,
+        time: intakeTime,
+        location: location,
     };
+
+    // If in edit mode, include the intake ID in the record
+    if (editMode) {
+        newRecord.id = parseInt(document.getElementById('mealIntakeForm').getAttribute('data-record-id'));
+    }
+
+    // Save the record
+    fetch('/api/saveMealIntake', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newRecord)
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                closeTrackerPopup();
+                fetchMealIntakes();
+            } else {
+                throw new Error('Failed to save the meal intake');
+            }
+        })
+        .catch(error => {
+            console.error('Error saving the meal intake:', error);
+            alert('An error occurred while saving the meal intake. Please try again.');
+        });
+};
+
+
 
 
 
@@ -351,29 +353,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Improved calculateNutritionalData function with error handling
-    function calculateNutritionalData(selectedMeal, mealWeight) {
-        if (!selectedMeal || !mealWeight) {
-            return null;
-        }
-
-        // Ensure the selectedMeal contains the necessary nutritional info
-        if (selectedMeal.Calories === undefined || selectedMeal.Protein === undefined || selectedMeal.Fat === undefined || selectedMeal.Fiber === undefined) {
-            console.error("Invalid meal selected:", selectedMeal);
-            return null;
-        }
-
-        const calculatedValues = {};
-
-        // Calculate nutritional values based on meal weight
-        calculatedValues.energy = (selectedMeal.Calories / 100) * mealWeight;
-        calculatedValues.protein = (selectedMeal.Protein / 100) * mealWeight;
-        calculatedValues.fat = (selectedMeal.Fat / 100) * mealWeight;
-        calculatedValues.fiber = (selectedMeal.Fiber / 100) * mealWeight;
-
-        return calculatedValues;
-    }
-
+    
     window.showNutritionalData = showNutritionalData;
     window.deleteMealRecord = function (mealIntakeID) {
         fetch(`/api/deleteMealIntake?recordId=${mealIntakeID}`, {
