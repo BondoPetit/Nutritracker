@@ -21,6 +21,26 @@ const config = {
     }
 };
 
+let pool;
+
+async function connectToDatabase() {
+    if (!pool) {
+        pool = await sql.connect(config);
+    }
+    return pool;
+}
+
+// Middleware to ensure the database connection is established
+app.use(async (req, res, next) => {
+    try {
+        await connectToDatabase();
+        next();
+    } catch (err) {
+        console.error('Database connection failed:', err);
+        res.status(500).json({ error: 'Failed to connect to the database.' });
+    }
+});
+
 // Middleware for parsing URL-encoded bodies
 app.use(express.urlencoded({ extended: true }));
 // Middleware for parsing JSON bodies
@@ -39,7 +59,7 @@ app.post('/register', async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        const pool = await sql.connect(config);
+        const pool = await connectToDatabase();
 
         // Insert new user into the database
         const registrationResult = await pool.request()
@@ -58,18 +78,15 @@ app.post('/register', async (req, res) => {
     } catch (err) {
         console.error('Error registering user:', err);
         res.status(500).json({ error: 'An error occurred while registering user.' });
-    } finally {
-        await sql.close();
     }
 });
-
 
 // Route to update user data
 app.post('/updateUserData', async (req, res) => {
     const { userID, height, weight, age, gender } = req.body;
 
     try {
-        const pool = await sql.connect(config);
+        const pool = await connectToDatabase();
 
         // Fetch UserID from Users table based on provided userID
         const userResult = await pool.request()
@@ -102,8 +119,6 @@ app.post('/updateUserData', async (req, res) => {
     } catch (err) {
         console.error('Error updating user data:', err);
         res.status(500).send('Failed to update user data');
-    } finally {
-        await sql.close();
     }
 });
 
@@ -112,7 +127,7 @@ app.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        const pool = await sql.connect(config);
+        const pool = await connectToDatabase();
 
         // Check if user credentials are valid
         const result = await pool.request()
@@ -134,8 +149,6 @@ app.post('/login', async (req, res) => {
     } catch (err) {
         console.error('Error logging in:', err);
         res.status(500).json({ error: 'An error occurred while logging in.' });
-    } finally {
-        await sql.close();
     }
 });
 
@@ -149,7 +162,7 @@ app.post('/submit-body-data', async (req, res) => {
     const { userID, height, weight, age, gender } = req.body;
 
     try {
-        const pool = await sql.connect(config);
+        const pool = await connectToDatabase();
 
         // Insert height, weight, age, and gender data into UserDetails table
         await pool.request()
@@ -168,8 +181,6 @@ app.post('/submit-body-data', async (req, res) => {
     } catch (err) {
         console.error('Error submitting body data:', err);
         res.status(500).json({ error: 'An error occurred while submitting body data.' });
-    } finally {
-        await sql.close();
     }
 });
 
@@ -178,7 +189,7 @@ app.get('/MyStats.html', async (req, res) => {
     const userID = req.query.userID;
 
     try {
-        const pool = await sql.connect(config);
+        const pool = await connectToDatabase();
 
         // Fetch user's data (Email, Height, Weight, Age, Gender) based on userID
         const result = await pool.request()
@@ -200,8 +211,6 @@ app.get('/MyStats.html', async (req, res) => {
     } catch (err) {
         console.error('Error fetching user data:', err);
         res.status(500).send('An error occurred while fetching user data');
-    } finally {
-        await sql.close();
     }
 });
 
@@ -210,7 +219,7 @@ app.get('/getUserData', async (req, res) => {
     const userID = req.query.userID;
 
     try {
-        const pool = await sql.connect(config);
+        const pool = await connectToDatabase();
 
         // Fetch user's data (Email, Height, Weight, Age, Gender) based on userID
         const result = await pool.request()
@@ -231,18 +240,15 @@ app.get('/getUserData', async (req, res) => {
     } catch (err) {
         console.error('Error fetching user data:', err);
         res.status(500).send('An error occurred while fetching user data');
-    } finally {
-        await sql.close();
     }
 });
-
 
 // Route to delete user account and associated data
 app.delete('/deleteUser', async (req, res) => {
     const { userID } = req.query;
 
     try {
-        const pool = await sql.connect(config);
+        const pool = await connectToDatabase();
 
         // Delete user from UserDetails table
         await pool.request()
@@ -264,8 +270,6 @@ app.delete('/deleteUser', async (req, res) => {
     } catch (err) {
         console.error('Error deleting user:', err);
         res.status(500).send('Failed to delete user');
-    } finally {
-        await sql.close();
     }
 });
 
@@ -291,14 +295,8 @@ app.get('/MealTracker.html', (req, res) => {
 });
 
 app.get('/Activity.html', (req, res) => {
-
-    // Extract userID from the URL query string and parse it as an integer
-    const userID = parseInt(req.query.userID, 10);
-
-    // Send Activity.html as response
     res.sendFile(path.join(__dirname, 'views', 'Activity.html'));
 });
-
 
 app.get('/DailyNutri.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'DailyNutri.html'));

@@ -117,4 +117,47 @@ router.delete('/deleteActivity', async (req, res) => {
     }
 });
 
+// Save or update basal metabolism
+router.post('/saveBasalMetabolism', async (req, res) => {
+    const { userID, basalMetabolism } = req.body;
+
+    try {
+        const pool = await getDbPool();
+
+        // Check if the user already has a record in the table
+        const result = await pool.request()
+            .input('userID', sql.Int, userID)
+            .query(`
+                SELECT UserID FROM BasalMetabolism WHERE UserID = @userID
+            `);
+
+        if (result.recordset.length > 0) {
+            // Update existing record
+            await pool.request()
+                .input('userID', sql.Int, userID)
+                .input('basalMetabolism', sql.Float, basalMetabolism)
+                .query(`
+                    UPDATE BasalMetabolism
+                    SET BasalMetabolism = @basalMetabolism
+                    WHERE UserID = @userID
+                `);
+        } else {
+            // Insert a new record
+            await pool.request()
+                .input('userID', sql.Int, userID)
+                .input('basalMetabolism', sql.Float, basalMetabolism)
+                .query(`
+                    INSERT INTO BasalMetabolism (UserID, BasalMetabolism)
+                    VALUES (@userID, @basalMetabolism)
+                `);
+        }
+
+        res.status(200).json({ success: true });
+    } catch (err) {
+        console.error('Error saving basal metabolism:', err);
+        res.status(500).json({ error: 'An error occurred while saving basal metabolism.' });
+    }
+});
+
+
 module.exports = router;

@@ -32,6 +32,17 @@ router.get('/getDailyNutri24', async (req, res) => {
     try {
         const pool = await getDbPool();
 
+        // Fetch basal metabolism
+        const metabolismResult = await pool.request()
+            .input('userID', sql.Int, userID)
+            .query(`
+                SELECT BasalMetabolism 
+                FROM BasalMetabolism 
+                WHERE UserID = @userID
+            `);
+        const basalMetabolism = metabolismResult.recordset[0]?.BasalMetabolism || 0;
+        const hourlyBasalMetabolism = basalMetabolism / 24;
+
         // Fetch meal intake data
         const mealIntakeResult = await pool.request()
             .input('userID', sql.Int, userID)
@@ -67,8 +78,8 @@ router.get('/getDailyNutri24', async (req, res) => {
             hourlyData[record.Hour] = {
                 EnergyIntake: record.EnergyIntake,
                 WaterIntake: record.WaterIntake,
-                Burning: 0,
-                NetCalories: record.EnergyIntake
+                Burning: hourlyBasalMetabolism,
+                NetCalories: record.EnergyIntake - hourlyBasalMetabolism
             };
         });
 
@@ -77,11 +88,11 @@ router.get('/getDailyNutri24', async (req, res) => {
                 hourlyData[record.Hour] = {
                     EnergyIntake: 0,
                     WaterIntake: 0,
-                    Burning: record.Burning,
-                    NetCalories: -record.Burning
+                    Burning: record.Burning + hourlyBasalMetabolism,
+                    NetCalories: -record.Burning - hourlyBasalMetabolism
                 };
             } else {
-                hourlyData[record.Hour].Burning = record.Burning;
+                hourlyData[record.Hour].Burning += record.Burning;
                 hourlyData[record.Hour].NetCalories -= record.Burning;
             }
         });
@@ -104,6 +115,17 @@ router.get('/getDailyNutriMonth', async (req, res) => {
 
     try {
         const pool = await getDbPool();
+
+        // Fetch basal metabolism
+        const metabolismResult = await pool.request()
+            .input('userID', sql.Int, userID)
+            .query(`
+                SELECT BasalMetabolism 
+                FROM BasalMetabolism 
+                WHERE UserID = @userID
+            `);
+        const basalMetabolism = metabolismResult.recordset[0]?.BasalMetabolism || 0;
+        const dailyBasalMetabolism = basalMetabolism;
 
         // Fetch meal intake data
         const mealIntakeResult = await pool.request()
@@ -136,8 +158,8 @@ router.get('/getDailyNutriMonth', async (req, res) => {
             dailyData[record.Day] = {
                 EnergyIntake: record.EnergyIntake,
                 WaterIntake: record.WaterIntake,
-                Burning: 0,
-                NetCalories: record.EnergyIntake
+                Burning: dailyBasalMetabolism,
+                NetCalories: record.EnergyIntake - dailyBasalMetabolism
             };
         });
 
@@ -146,11 +168,11 @@ router.get('/getDailyNutriMonth', async (req, res) => {
                 dailyData[record.Day] = {
                     EnergyIntake: 0,
                     WaterIntake: 0,
-                    Burning: record.Burning,
-                    NetCalories: -record.Burning
+                    Burning: record.Burning + dailyBasalMetabolism,
+                    NetCalories: -record.Burning - dailyBasalMetabolism
                 };
             } else {
-                dailyData[record.Day].Burning = record.Burning;
+                dailyData[record.Day].Burning += record.Burning;
                 dailyData[record.Day].NetCalories -= record.Burning;
             }
         });

@@ -1,5 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const userID = 29; // Replace with the actual user ID or retrieve dynamically
+    // Extract userID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const userID = parseInt(urlParams.get("userID"), 10);
 
     async function fetchNutritionalIntake(url) {
         const response = await fetch(url);
