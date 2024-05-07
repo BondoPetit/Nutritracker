@@ -1,49 +1,41 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // Function to display daily nutritional intake
-    function displayDailyNutritionalIntake() {
-        const currentDateTime = new Date();
-        const currentHour = currentDateTime.getHours();
-        const endDateTime = new Date(currentDateTime); // Set the end time to the current hour
-        const startDateTime = new Date(currentDateTime);
-        startDateTime.setHours(currentDateTime.getHours() - 24); // Set the start time to 24 hours ago
+    const userID = 29; // Replace with the actual user ID or retrieve dynamically
 
-        const records = JSON.parse(localStorage.getItem('mealIntakeRecords')) || [];
-        const dailyIntake = {};
-
-        // Initialize hourly intake data
-        for (let i = 0; i <= 23; i++) { // Iterate over the last 24 hours
-            const hour = (currentHour - 23 + i + 24) % 24; // Calculate the hour dynamically
-            const timeOfDay = (hour < 10 ? '0' : '') + hour + ':00'; // Represent the time of day in 24-hour format
-            dailyIntake[timeOfDay] = { energy: 0, fluid: 0 };
-        }
-
-        // Iterate over records and calculate hourly intake within the last 24 hours
-        records.forEach(record => {
-            const recordDateTime = new Date(`${record.date}T${record.time}`);
-            if (recordDateTime >= startDateTime && recordDateTime <= endDateTime) {
-                const hour = recordDateTime.getHours();
-                const timeOfDay = (hour < 10 ? '0' : '') + hour + ':00'; // Represent the time of day in 24-hour format
-                dailyIntake[timeOfDay].energy += record.nutritionalData.energy || 0;
-                dailyIntake[timeOfDay].fluid += record.nutritionalData.fluid || 0;
-            }
-        });
-
-        // Display hourly intake data
-        const dailyNutriContainer = document.getElementById('dailyNutriContainer');
-        dailyNutriContainer.innerHTML = ''; // Clear existing content
-
-        for (const hour in dailyIntake) {
-            if (dailyIntake.hasOwnProperty(hour)) {
-                const intakeData = dailyIntake[hour];
-                const listItem = document.createElement('li');
-                listItem.textContent = `${hour}, Energy: ${intakeData.energy.toFixed(2)} kcal, Fluid: ${intakeData.fluid.toFixed(2)} ml`;
-                listItem.classList.add('daily-intake-item'); // Add a class for styling
-                dailyNutriContainer.appendChild(listItem);
-            }
-        }
+    async function fetchNutritionalIntake(url) {
+        const response = await fetch(url);
+        const data = await response.json();
+        return data;
     }
 
-    // Call function to display daily nutritional intake upon DOM content load
-    displayDailyNutritionalIntake();
-});
+    function displayNutritionalIntake(data, containerId) {
+        const dailyNutriContainer = document.getElementById(containerId);
+        dailyNutriContainer.innerHTML = ''; // Clear existing content
 
+        data.forEach(item => {
+            const time = item.Hour !== undefined ? item.Hour + ':00' : item.Day;
+            const listItem = document.createElement('li');
+            listItem.textContent = `${time}, Energy: ${item.EnergyIntake.toFixed(2)} kcal, Fluid: ${item.WaterIntake.toFixed(2)} ml, Burning: ${item.Burning.toFixed(2)} kcal, Net Calories: ${item.NetCalories.toFixed(2)} kcal`;
+            listItem.classList.add('daily-intake-item'); // Add a class for styling
+            dailyNutriContainer.appendChild(listItem);
+        });
+    }
+
+    async function displayDailyNutritionalIntake(viewType = '24hours') {
+        let url;
+        if (viewType === '24hours') {
+            url = `/api/getDailyNutri24?userID=${userID}`;
+        } else if (viewType === 'month') {
+            url = `/api/getDailyNutriMonth?userID=${userID}`;
+        }
+
+        const data = await fetchNutritionalIntake(url);
+        displayNutritionalIntake(data, 'dailyNutriContainer');
+    }
+
+    // Event listeners for the view type buttons
+    document.getElementById("view24hours").addEventListener("click", () => displayDailyNutritionalIntake('24hours'));
+    document.getElementById("viewMonth").addEventListener("click", () => displayDailyNutritionalIntake('month'));
+
+    // Default view
+    displayDailyNutritionalIntake('24hours');
+});

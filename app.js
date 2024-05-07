@@ -6,6 +6,7 @@ const path = require('path');
 const mealController = require('./controllers/mealController');
 const trackerController = require('./controllers/trackerController');
 const activityController = require('./controllers/activityController');
+const dailyController = require('./controllers/dailyController');
 
 const app = express();
 const port = 3000;
@@ -276,6 +277,9 @@ app.use('/api', trackerController);
 
 // Use the activity controller for activity-related routes
 app.use('/api', activityController);
+
+// Add dailyController to the app
+app.use('/api', dailyController);
 
 // Serve various HTML pages
 app.get('/MealCreator.html', (req, res) => {
