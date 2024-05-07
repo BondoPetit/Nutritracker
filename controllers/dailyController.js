@@ -72,29 +72,26 @@ router.get('/getDailyNutri24', async (req, res) => {
                 GROUP BY DATEPART(hour, ActivityTime)
             `);
 
-        // Merge results
+        // Initialize hourly data for all 24 hours
         const hourlyData = {};
-        mealIntakeResult.recordset.forEach(record => {
-            hourlyData[record.Hour] = {
-                EnergyIntake: record.EnergyIntake,
-                WaterIntake: record.WaterIntake,
+        for (let hour = 0; hour < 24; hour++) {
+            hourlyData[hour] = {
+                EnergyIntake: 0,
+                WaterIntake: 0,
                 Burning: hourlyBasalMetabolism,
-                NetCalories: record.EnergyIntake - hourlyBasalMetabolism
+                NetCalories: -hourlyBasalMetabolism
             };
+        }
+
+        mealIntakeResult.recordset.forEach(record => {
+            hourlyData[record.Hour].EnergyIntake = record.EnergyIntake;
+            hourlyData[record.Hour].WaterIntake = record.WaterIntake;
+            hourlyData[record.Hour].NetCalories = record.EnergyIntake - hourlyBasalMetabolism;
         });
 
         activityResult.recordset.forEach(record => {
-            if (!hourlyData[record.Hour]) {
-                hourlyData[record.Hour] = {
-                    EnergyIntake: 0,
-                    WaterIntake: 0,
-                    Burning: record.Burning + hourlyBasalMetabolism,
-                    NetCalories: -record.Burning - hourlyBasalMetabolism
-                };
-            } else {
-                hourlyData[record.Hour].Burning += record.Burning;
-                hourlyData[record.Hour].NetCalories -= record.Burning;
-            }
+            hourlyData[record.Hour].Burning += record.Burning;
+            hourlyData[record.Hour].NetCalories -= record.Burning;
         });
 
         const result = Object.keys(hourlyData).map(hour => ({
