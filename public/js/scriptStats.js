@@ -99,4 +99,3 @@ async function deleteUser() {
 }
 
 
-console.log('hey')
