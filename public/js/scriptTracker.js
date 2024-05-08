@@ -129,6 +129,7 @@ document.addEventListener("DOMContentLoaded", function () {
             alert("Geolocation is not supported by this browser.");
         }
     }
+    
 
     async function populateTrackerModal(editMode, recordId = null) {
         try {
@@ -194,7 +195,8 @@ document.addEventListener("DOMContentLoaded", function () {
             recordElement.dataset.recordId = record.MealIntakeID;
 
             const intakeDate = new Date(record.IntakeDate).toLocaleDateString();
-            const intakeTime = new Date(record.IntakeTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+            const intakeTime = new Date(record.IntakeTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit',  timeZone: 'UTC' });
+            
 
             const textElement = document.createElement('p');
             textElement.textContent = `${record.MealName}  ${record.Weight}g  ${intakeDate}  ${intakeTime} Location: ${record.Location}`;

@@ -83,12 +83,14 @@ router.post('/saveMealIntake', async (req, res) => {
         // Convert the time string into a Date object
         const [hours, minutes, seconds] = time.split(':');
         let intakeHour = parseInt(hours, 10);
-       
+
 
         // Ensure the hour value stays within the range of 0-23
         intakeHour = intakeHour % 24;
 
         const intakeTime = new Date(1970, 0, 1, intakeHour, minutes, seconds);
+        // Adding one hour to intakeTime
+        intakeTime.setHours(intakeTime.getHours() + 1);
 
         // Fetch the nutritional information from the Meals table based on MealID
         const mealQueryResult = await pool.request()
