@@ -136,42 +136,53 @@ document.addEventListener("DOMContentLoaded", function () {
             const mealSelectorHTML = meals.map(meal => `<option value="${meal.MealID}">${meal.Name}</option>`).join('');
             const modalContent = document.querySelector('#mealPopUp .modal-content');
             modalContent.innerHTML = `<span class="close" onclick="closeTrackerPopup()">&times;</span>
-        <h2>${editMode ? 'Edit' : 'Add'} Meal Intake</h2>
-        <form id="mealIntakeForm" data-edit-mode="${editMode}" data-record-id="${recordId}">
-            <label for="mealName">Meal Name:</label>
-            <select id="mealName" name="mealName">${mealSelectorHTML}</select>
-            <label for="mealWeight">Weight (g):</label>
-            <input type="number" id="mealWeight" name="mealWeight" placeholder="Enter weight" required>
-            <label for="intakeDate">Date:</label>
-            <input type="date" id="intakeDate" name="intakeDate" required>
-            <label for="intakeTime">Time:</label>
-            <input type="time" id="intakeTime" name="intakeTime" required>
-            <label for="location">Location:</label>
-            <input type="text" id="location" name="location" placeholder="Fetching location..." readonly>
-            <div id="nutritionalDisplay"></div>
-            <button type="button" onclick="saveTracker()">Save Meal Intake</button>
-        </form>`;
-
+            <h2>${editMode ? 'Edit' : 'Add'} Meal Intake</h2>
+            <form id="mealIntakeForm" data-edit-mode="${editMode}" data-record-id="${recordId}">
+                <label for="mealName">Meal Name:</label>
+                <select id="mealName" name="mealName">${mealSelectorHTML}</select>
+                <label for="mealWeight">Weight (g):</label>
+                <input type="number" id="mealWeight" name="mealWeight" placeholder="Enter weight" required>
+                <label for="intakeDate">Date:</label>
+                <input type="date" id="intakeDate" name="intakeDate" required>
+                <label for="intakeTime">Time:</label>
+                <input type="time" id="intakeTime" name="intakeTime" required>
+                <label for="location">Location:</label>
+                <input type="text" id="location" name="location" placeholder="Fetching location..." readonly>
+                <div id="nutritionalDisplay"></div>
+                <button type="button" onclick="saveTracker()">Save Meal Intake</button>
+            </form>`;
+    
             if (editMode && recordId !== null) {
                 const response = await fetch(`/api/getMealIntake?id=${recordId}`);
                 const record = await response.json();
-
+    
                 const mealNameElem = document.getElementById('mealName');
                 const mealWeightElem = document.getElementById('mealWeight');
                 const intakeDateElem = document.getElementById('intakeDate');
                 const intakeTimeElem = document.getElementById('intakeTime');
                 const locationElem = document.getElementById('location');
-
+    
+                const dateValue = record.IntakeDate ? record.IntakeDate.split('T')[0] : '';
+                let timeValue = '';  // Initialize with an empty string
+    
+                if (record.IntakeTime && record.IntakeTime.match(/^\d{2}:\d{2}/)) {
+                    timeValue = record.IntakeTime.substring(0, 5);
+                }
+    
                 if (mealNameElem) mealNameElem.value = record.MealID || '';
                 if (mealWeightElem) mealWeightElem.value = record.Weight || '';
-                if (intakeDateElem) intakeDateElem.value = record.IntakeDate || '';
-                if (intakeTimeElem) intakeTimeElem.value = record.IntakeTime.substring(0, 5) || '';
+                if (intakeDateElem) intakeDateElem.value = dateValue;
+                if (intakeTimeElem) intakeTimeElem.value = timeValue;  // This ensures only valid times are set
                 if (locationElem) locationElem.value = record.Location || '';
             }
         } catch (error) {
             console.error('Error fetching meals:', error);
         }
     }
+    
+    
+    
+    
 
     function displayMeals() {
         const recordsContainer = document.getElementById('recordsContainer');
