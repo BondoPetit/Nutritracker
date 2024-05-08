@@ -34,7 +34,7 @@ app.use('/api', mealController);
 app.use('/api', trackerController);
 app.use('/api', activityController);
 app.use('/api', dailyController);
-app.use(statsController); // Use the stats controller for user statistics and profile management
+app.use('/api', statsController); // Use the stats controller for user statistics and profile management
 
 // Start the server
 app.listen(port, () => {

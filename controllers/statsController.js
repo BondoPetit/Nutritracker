@@ -62,19 +62,26 @@ router.get('/getUserData', async (req, res) => {
     }
 });
 
+
 // Route to delete user account and associated data
 router.delete('/deleteUser', async (req, res) => {
     const { userID } = req.query;
     try {
         const pool = await getPool();
+        
+        // First delete dependent data in BasalMetabolism
         await pool.request()
             .input('userID', sql.Int, userID)
-            .query(`
-                DELETE FROM UserDetails
-                WHERE UserID = @userID;
-                DELETE FROM Users
-                WHERE UserID = @userID;
-            `);
+            .query('DELETE FROM BasalMetabolism WHERE UserID = @userID');
+
+        // Then delete the user
+        await pool.request()
+            .input('userID', sql.Int, userID)
+            .query('DELETE FROM UserDetails WHERE UserID = @userID');
+        await pool.request()
+            .input('userID', sql.Int, userID)
+            .query('DELETE FROM Users WHERE UserID = @userID');
+
         res.sendStatus(200);
     } catch (err) {
         console.error('Error deleting user:', err);
@@ -82,9 +89,7 @@ router.delete('/deleteUser', async (req, res) => {
     }
 });
 
-// Route for serving MyStats page
-router.get('/MyStats.html', async (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'views', 'MyStats.html'));
-});
+
+
 
 module.exports = router;

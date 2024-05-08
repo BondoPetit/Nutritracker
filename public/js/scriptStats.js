@@ -1,23 +1,24 @@
-document.addEventListener('DOMContentLoaded', async () => {
-    const userID = getUserIdFromQueryString();
+document.addEventListener('DOMContentLoaded', function() {
+    fetchUserData(); // Call this function to load user data initially
 
-    try {
-        const response = await fetch(`/getUserData?userID=${userID}`);
-        if (response.ok) {
-            const userData = await response.json();
-            displayUserData(userData);
-        } else {
-            console.error('Failed to fetch user data');
+    const deleteUserBtn = document.querySelector('.deleteUserBtn');
+    deleteUserBtn.addEventListener('click', function(event) {
+        event.preventDefault(); // Prevent the form from submitting
+        const confirmed = confirm('Are you sure you want to delete your account?');
+        if (confirmed) {
+            deleteUser();
         }
-    } catch (err) {
-        console.error('Error fetching user data:', err);
-    }
+    });
 });
+
+
 
 function getUserIdFromQueryString() {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get('userID');
 }
+
+
 
 function displayUserData(userData) {
     if (userData) {
@@ -26,7 +27,7 @@ function displayUserData(userData) {
         document.getElementById('weight').innerText = userData.Weight || '';
         document.getElementById('age').innerText = userData.Age || '';
         document.getElementById('gender').innerText = userData.Gender || '';
-        
+
         // Add event listeners for inline editing
         const editableFields = document.querySelectorAll('[contenteditable="true"]');
         editableFields.forEach(field => {
@@ -35,20 +36,31 @@ function displayUserData(userData) {
             });
         });
 
-        // Add event listener for Delete User button
-        const deleteUserBtn = document.getElementById('deleteUserBtn');
-        if (deleteUserBtn) {
-            deleteUserBtn.addEventListener('click', async () => {
-                const confirmed = confirm('Are you sure you want to delete your account?');
-                if (confirmed) {
-                    await deleteUser();
-                }
-            });
-        }
-    } else {
-        console.error('User data is null or undefined');
     }
 }
+
+async function fetchUserData() {
+    const userID = getUserIdFromQueryString();
+    if (!userID) {
+        console.error('No userID provided for fetching data');
+        alert('No userID provided');
+        return;
+    }
+    try {
+        const response = await fetch(`/api/getUserData?userID=${userID}`);
+        if (response.ok) {
+            const userData = await response.json();
+            displayUserData(userData);
+        } else {
+            console.error('Failed to fetch user data');
+            alert('Failed to fetch user data');
+        }
+    } catch (err) {
+        console.error('Error fetching user data:', err);
+        alert('Error while fetching user data. Please check console for details.');
+    }
+}
+
 
 
 async function submitUserData() {
@@ -57,10 +69,10 @@ async function submitUserData() {
     const height = document.getElementById('height').innerText;
     const weight = document.getElementById('weight').innerText;
     const age = document.getElementById('age').innerText;
-    const gender = document.getElementById('gender').innerText; // Get gender
+    const gender = document.getElementById('gender').innerText;
 
     try {
-        const response = await fetch('/updateUserData', {
+        const response = await fetch('/api/updateUserData', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -79,23 +91,29 @@ async function submitUserData() {
 }
 
 
+
+
 async function deleteUser() {
     const userID = getUserIdFromQueryString();
-
+    if (!userID) {
+        console.error('No userID provided for deletion');
+        alert('No userID provided');
+        return;
+    }
     try {
-        const response = await fetch(`/deleteUser?userID=${userID}`, {
+        const response = await fetch(`/api/deleteUser?userID=${userID}`, {
             method: 'DELETE'
         });
-
         if (response.ok) {
             console.log('User deleted successfully');
-            window.location.href = '/'; // Redirect to login page
+            window.location.href = '/Login.html'; // Redirect to Login.html after successful deletion
         } else {
             console.error('Failed to delete user');
+            alert('Failed to delete user. Please try again.');
         }
     } catch (err) {
         console.error('Error deleting user:', err);
+        alert('Error while deleting user. Please check console for details.');
     }
 }
-
 
