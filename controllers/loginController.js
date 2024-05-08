@@ -49,4 +49,8 @@ router.post('/login', async (req, res) => {
     }
 });
 
+module.exports = function() {
+    return "hello world";
+}
+
 module.exports = router;
