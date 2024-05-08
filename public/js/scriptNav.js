@@ -25,4 +25,3 @@ function updateHrefWithUserID(href, userID) {
 }
 
 
-console.log('hey')

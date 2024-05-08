@@ -206,4 +206,3 @@ router.delete('/deleteMeal', async (req, res) => {
 module.exports = router;
 
 
-console.log('hey')

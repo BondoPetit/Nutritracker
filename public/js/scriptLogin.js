@@ -23,4 +23,3 @@ signupBtn.onclick = function () {
 
 
 
-console.log('hey')
