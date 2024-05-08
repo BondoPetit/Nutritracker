@@ -558,3 +558,9 @@ window.deleteMeal = deleteMeal;
 window.showNutritionalData = showNutritionalData;
 
 
+module.exports = {
+    openMealPopup,
+    saveMeal,
+    deleteMeal,
+    // any other functions you need to export
+};
