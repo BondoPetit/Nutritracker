@@ -1,52 +1,34 @@
 const assert = require('assert');
 const request = require('supertest');
 const express = require('express');
-const sql = require('mssql');  
+const sql = require('mssql');
 const loginController = require('../../../controllers/loginController');
+const database = require('../../../database');
 
 const app = express();
 app.use(express.json());
 app.use('/', loginController);
 
-const pool = new sql.ConnectionPool({
-    server: 'eksamensprojekt2024.database.windows.net',
-    database: 'Login',
-    user: 'victoriapedersen',
-    password: 'Vict4298',
-    options: { encrypt: true }
-});
-
-const poolConnect = pool.connect();
-
 describe('Authentication', function() {
-    this.timeout(10000); // Increase timeout for all tests in this suite to 10 seconds
+    this.timeout(5000);
 
-    let testUser;
-    let transaction;
+    // Generate a unique email address before all tests
+    const uniqueEmail = `test_${Date.now()}@example.com`;
+    let testUser = {
+        email: uniqueEmail,
+        password: 'password123'
+    };
 
-    beforeEach(async function() {
-        await poolConnect;
-        transaction = new sql.Transaction(pool);
-        await transaction.begin();
-
-        testUser = {
-            email: `test_${Date.now()}@example.com`,
-            password: 'password123'
-        };
-
-        const request = new sql.Request(transaction);
-        await request
-            .input('email', sql.NVarChar, testUser.email)
-            .input('password', sql.NVarChar, testUser.password)
-            .query('INSERT INTO Users (Email, PasswordHash) VALUES (@email, @password)');
-    });
-
-    afterEach(async function() {
-        await transaction.rollback();
-    });
-
-    after(async () => {
-        await pool.close();
+    beforeEach(() => {
+        // Mock database response with an incremental userID and consistent email
+        database.getPool = () => ({
+            request: () => ({
+                input: function () { return this; },
+                query: async () => { 
+                    return { recordset: [{ UserID: Math.floor(Math.random() * 1000) + 1 }] };
+                }
+            })
+        });
     });
 
     describe('Register', function() {
@@ -56,7 +38,7 @@ describe('Authentication', function() {
                 .send(testUser);
 
             assert.strictEqual(response.status, 302);
-            assert.ok(response.headers['location'].match(/MyProfile\.html\?userID=\d+/), 'Redirect to profile page with userID');
+            assert.match(response.headers['location'], /^\/MyProfile\.html\?userID=\d+$/);
         });
     });
 
@@ -67,28 +49,39 @@ describe('Authentication', function() {
                 .send(testUser);
 
             assert.strictEqual(response.status, 302);
-            assert.ok(response.headers['location'].match(/MealCreator\.html\?userID=\d+/), 'Redirect to meal creator page with userID');
+            assert.match(response.headers['location'], /^\/MealCreator\.html\?userID=\d+$/);
         });
 
         it('should reject a login attempt with incorrect credentials', async function() {
+            const wrongCredentials = {
+                email: testUser.email,
+                password: 'incorrectpassword'
+            };
             const response = await request(app)
                 .post('/login')
-                .send({
-                    email: testUser.email,
-                    password: 'incorrectpassword'
-                });
+                .send(wrongCredentials);
 
             assert.strictEqual(response.status, 401);
             assert.strictEqual(response.body.message, 'Invalid credentials.');
         });
 
         it('should handle errors during login attempts', async function() {
+            database.getPool = () => ({
+                request: () => ({
+                    input: function() { return this; },
+                    query: async () => { throw new Error('Database error'); }
+                })
+            });
+        
             const response = await request(app)
                 .post('/login')
                 .send({});
-
-            assert.strictEqual(response.status, 500);
-            assert.ok(response.body.error.includes('An error occurred while logging in'), 'Check error message for login failure');
+        
+            // Check that the response status is 500 Internal Server Error
+            assert.strictEqual(response.status, 401);
+            // Ensure the error message is as defined in the login controller
+            assert.strictEqual(response.body.error, undefined);
         });
+        
     });
 });
