@@ -1,26 +1,8 @@
-// dailyController.js
 const express = require('express');
 const sql = require('mssql');
 const router = express.Router();
+const { getPool } = require('../database');
 
-const config = {
-    server: 'eksamensprojekt2024.database.windows.net',
-    database: 'Login',
-    user: 'victoriapedersen',
-    password: 'Vict4298',
-    options: {
-        encrypt: true,
-    },
-};
-
-let pool;
-
-async function getDbPool() {
-    if (!pool) {
-        pool = await sql.connect(config);
-    }
-    return pool;
-}
 
 // Get nutritional data for the last 24 hours
 router.get('/getDailyNutri24', async (req, res) => {
@@ -30,7 +12,7 @@ router.get('/getDailyNutri24', async (req, res) => {
     startDateTime.setHours(startDateTime.getHours() - 24);
 
     try {
-        const pool = await getDbPool();
+        const pool = await getPool();
 
         // Fetch basal metabolism
         const metabolismResult = await pool.request()
@@ -111,7 +93,7 @@ router.get('/getDailyNutriMonth', async (req, res) => {
     const userID = parseInt(req.query.userID, 10);
 
     try {
-        const pool = await getDbPool();
+        const pool = await getPool();
 
         // Fetch basal metabolism
         const metabolismResult = await pool.request()

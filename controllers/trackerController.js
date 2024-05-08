@@ -1,32 +1,13 @@
 const express = require('express');
 const sql = require('mssql');
 const router = express.Router();
-
-const config = {
-    server: 'eksamensprojekt2024.database.windows.net',
-    database: 'Login',
-    user: 'victoriapedersen',
-    password: 'Vict4298',
-    options: {
-        encrypt: true,
-    },
-};
-
-let pool;
-
-async function getDbPool() {
-    if (!pool) {
-        pool = await sql.connect(config);
-    }
-    return pool;
-}
+const { getPool } = require('../database');
 
 // Fetch all meal intakes for a user
 router.get('/getMealIntakes', async (req, res) => {
     const userID = parseInt(req.query.userID, 10);
     try {
-        const pool = await getDbPool();
-
+        const pool = await getPool();
         const result = await pool.request()
             .input('userID', sql.Int, userID)
             .query(`
@@ -47,7 +28,7 @@ router.get('/getMealIntakes', async (req, res) => {
 router.get('/getMealIntake', async (req, res) => {
     const mealIntakeID = parseInt(req.query.id, 10); // Changed from 'recordId' to 'id'
     try {
-        const pool = await getDbPool();
+        const pool = await getPool();
 
         const result = await pool.request()
             .input('mealIntakeID', sql.Int, mealIntakeID)
@@ -76,7 +57,7 @@ router.post('/saveMealIntake', async (req, res) => {
 
     try {
         console.log('Request received:', req.body);
-        const pool = await getDbPool();
+        const pool = await getPool();
 
         console.log('ID:', id); // Log the value of id parameter
 
@@ -187,7 +168,7 @@ router.post('/saveMealIntake', async (req, res) => {
 router.delete('/deleteMealIntake', async (req, res) => {
     const mealIntakeID = parseInt(req.query.recordId, 10);
     try {
-        const pool = await getDbPool();
+        const pool = await getPool();
 
         await pool.request()
             .input('mealIntakeID', sql.Int, mealIntakeID)

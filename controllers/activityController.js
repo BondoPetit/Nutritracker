@@ -1,25 +1,8 @@
 const express = require('express');
 const sql = require('mssql');
 const router = express.Router();
+const { getPool } = require('../database'); // Adjust the path as necessary
 
-const config = {
-    server: 'eksamensprojekt2024.database.windows.net',
-    database: 'Login',
-    user: 'victoriapedersen',
-    password: 'Vict4298',
-    options: {
-        encrypt: true,
-    },
-};
-
-let pool;
-
-async function getDbPool() {
-    if (!pool) {
-        pool = await sql.connect(config);
-    }
-    return pool;
-}
 
 // Save or update an activity
 router.post('/saveActivity', async (req, res) => {
@@ -29,7 +12,7 @@ router.post('/saveActivity', async (req, res) => {
     
 
     try {
-        const pool = await getDbPool();
+        const pool = await getPool();
 
         // Convert the time string into the required format
         const activityTime = new Date(`1970-01-01T${time}`);
@@ -79,7 +62,7 @@ router.get('/getActivities', async (req, res) => {
     const userID = parseInt(req.query.userID, 10);
 
     try {
-        const pool = await getDbPool();
+        const pool = await getPool();
 
         const result = await pool.request()
             .input('userID', sql.Int, userID)
@@ -101,7 +84,7 @@ router.delete('/deleteActivity', async (req, res) => {
     const activityID = parseInt(req.query.recordId, 10);
 
     try {
-        const pool = await getDbPool();
+        const pool = await getPool();
 
         await pool.request()
             .input('activityID', sql.Int, activityID)
@@ -122,7 +105,7 @@ router.post('/saveBasalMetabolism', async (req, res) => {
     const { userID, basalMetabolism } = req.body;
 
     try {
-        const pool = await getDbPool();
+        const pool = await getPool();
 
         // Check if the user already has a record in the table
         const result = await pool.request()

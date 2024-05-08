@@ -1,31 +1,14 @@
 const express = require('express');
 const sql = require('mssql');
 const router = express.Router();
+const { getPool } = require('../database'); // Adjust the path as necessary
 
-const config = {
-    server: 'eksamensprojekt2024.database.windows.net',
-    database: 'Login',
-    user: 'victoriapedersen',
-    password: 'Vict4298',
-    options: {
-        encrypt: true
-    }
-};
-
-let pool;
-
-async function getDbPool() {
-    if (!pool) {
-        pool = await sql.connect(config);
-    }
-    return pool;
-}
 
 // Fetch all meals and their ingredients for a user
 router.get('/getMeals', async (req, res) => {
     const userID = parseInt(req.query.userID, 10);
     try {
-        const pool = await getDbPool();
+        const pool = await getPool();
 
         // Fetch meals for a specific user
         const mealResults = await pool.request()
@@ -63,7 +46,7 @@ router.get('/getMeals', async (req, res) => {
 router.get('/getMeal', async (req, res) => {
     const mealID = parseInt(req.query.id, 10);
     try {
-        const pool = await getDbPool();
+        const pool = await getPool();
 
         // Fetch meal
         const mealResult = await pool.request()
@@ -104,7 +87,7 @@ router.post('/saveMeal', async (req, res) => {
     let { mealID, userID, mealName, creationDate, ingredients, nutritionalData } = req.body;
 
     try {
-        const pool = await getDbPool();
+        const pool = await getPool();
 
         if (mealID) {
             // Update existing meal
@@ -178,7 +161,7 @@ router.post('/saveMeal', async (req, res) => {
 router.delete('/deleteMeal', async (req, res) => {
     const mealID = parseInt(req.query.mealID, 10);
     try {
-        const pool = await getDbPool();
+        const pool = await getPool();
 
         // Delete ingredients first
         await pool.request()
