@@ -277,3 +277,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     fetchMealIntakes();
 });
+
+
+console.log('hey')

@@ -66,3 +66,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // Default view
     displayDailyNutritionalIntake('24hours');
 });
+
+
+console.log('hey')

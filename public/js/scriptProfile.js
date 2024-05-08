@@ -2,3 +2,6 @@
 const urlParams = new URLSearchParams(window.location.search);
 const userID = urlParams.get('userID');
 document.getElementById('userIDInput').value = userID;
+
+
+console.log('hey')

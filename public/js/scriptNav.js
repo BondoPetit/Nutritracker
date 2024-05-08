@@ -23,3 +23,6 @@ function updateHrefWithUserID(href, userID) {
     url.searchParams.set('userID', userID);
     return url.toString();
 }
+
+
+console.log('hey')

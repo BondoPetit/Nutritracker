@@ -556,3 +556,6 @@ window.saveMeal = saveMeal;
 window.closeMealPopup = closeMealPopup;
 window.deleteMeal = deleteMeal;
 window.showNutritionalData = showNutritionalData;
+
+
+console.log('hey')

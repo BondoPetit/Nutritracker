@@ -97,3 +97,6 @@ async function deleteUser() {
         console.error('Error deleting user:', err);
     }
 }
+
+
+console.log('hey')

@@ -161,3 +161,5 @@ router.post('/saveBasalMetabolism', async (req, res) => {
 
 
 module.exports = router;
+
+console.log('hey')
