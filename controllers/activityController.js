@@ -79,26 +79,7 @@ router.get('/getActivities', async (req, res) => {
     }
 });
 
-// Delete an activity
-router.delete('/deleteActivity', async (req, res) => {
-    const activityID = parseInt(req.query.recordId, 10);
 
-    try {
-        const pool = await getPool();
-
-        await pool.request()
-            .input('activityID', sql.Int, activityID)
-            .query(`
-                DELETE FROM Activities
-                WHERE ActivityID = @activityID
-            `);
-
-        res.status(200).json({ success: true });
-    } catch (err) {
-        console.error('Error deleting activity:', err);
-        res.status(500).json({ error: 'An error occurred while deleting the activity.' });
-    }
-});
 
 // Save or update basal metabolism
 router.post('/saveBasalMetabolism', async (req, res) => {
