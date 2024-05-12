@@ -286,11 +286,7 @@ document.addEventListener("DOMContentLoaded", function () {
     window.selectedIngredients = [];
 
 
-    // Function to open the ingredient intake modal
-    window.openIngredientOnlyModal = function () {
-        document.getElementById('ingredientOnly').style.display = 'block';
-        fetchCurrentLocation();
-    };
+ 
 
     window.closeIngredientOnlyModal = function () {
         document.getElementById('ingredientOnly').style.display = 'none';
@@ -298,25 +294,28 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     window.saveIngredient = function (event) {
-        event.preventDefault(); // Prevent the default behavior of changing the URL
+        if (event) {
+            event.preventDefault(); // Prevent the default behavior of form submission
+        }
+    
+        if (window.selectedIngredients.length === 0) {
+            alert('Please select at least one ingredient.');
+            return;
+        }
+    
         const userID = getUserIDFromURL();
         const intakeDate = document.getElementById('intakeDate').value;
-        let intakeTime = document.getElementById('intakeTime').value;
-
-        // Check if intakeTime is in the correct format, if not, adjust it
-        if (!/^\d{2}:\d{2}:\d{2}$/.test(intakeTime)) {
-            intakeTime += ':00'; // Add seconds if they're missing
-        }
-
+        const weight = parseFloat(document.getElementById('ingredientWeight').value);
+        const location = document.getElementById('location').value;
+    
+        // Iterate through each selected ingredient and save the intake
         window.selectedIngredients.forEach(ingredient => {
-            const weight = parseFloat(document.getElementById('ingredientWeight').value);
             const payload = {
-                userID: userID,
+                userID: userID, // Include userID in the payload
                 ingredientName: ingredient.ingredientName,
                 weight: weight,
                 intakeDate: intakeDate,
-                intakeTime: intakeTime,
-                location: document.getElementById('location').value,
+                location: location,
                 nutritionalData: {
                     energy: ingredient.nutrition ? ingredient.nutrition.energy : 0,
                     protein: ingredient.nutrition ? ingredient.nutrition.protein : 0,
@@ -324,7 +323,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     fiber: ingredient.nutrition ? ingredient.nutrition.fiber : 0
                 }
             };
-
+    
             fetch('/api/saveIngredientIntake', {
                 method: 'POST',
                 headers: {
@@ -346,9 +345,14 @@ document.addEventListener("DOMContentLoaded", function () {
                     alert('Error saving the ingredient intake. Please check the console for more details.');
                 });
         });
-
+    
+        // Reset selected ingredients array after saving
         window.selectedIngredients = [];
     };
+    
+    
+    
+    
 
 
 
@@ -379,17 +383,22 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    window.fetchAndDisplayNutrition = function (ingredientId) {
-        fetch(`/api/getNutritionData?id=${ingredientId}`)
-            .then(response => response.json())
-            .then(data => {
-                console.log('Fetched Nutrition Data:', data);
-                const form = document.getElementById('ingredientIntakeForm');
-                form.dataset.nutrition = JSON.stringify(data);
-            })
-            .catch(error => console.error('Failed to fetch nutrition data:', error));
+    window.fetchAndDisplayNutrition = async function () {
+        try {
+            const userID = getUserIDFromURL();
+            const response = await fetch(`/api/getNutritionData?userID=${userID}`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch nutrition data');
+            }
+            const data = await response.json();
+            console.log('Fetched Nutrition Data:', data);
+            const form = document.getElementById('ingredientIntakeForm');
+            form.dataset.nutrition = JSON.stringify(data);
+        } catch (error) {
+            console.error('Failed to fetch nutrition data:', error);
+        }
     }
-
+    
     // Update search results
     function updateSearchResults(data) {
         const container = document.getElementById("searchResultsContainer");
@@ -405,32 +414,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 
-    // Function to dynamically add time input field to the ingredient-only modal form
-    function addTimeInputToIngredientModal() {
-        const form = document.getElementById('ingredientIntakeForm');
-        if (form) {
-            const timeInputLabel = document.createElement('label');
-            timeInputLabel.setAttribute('for', 'intakeTime');
-            timeInputLabel.textContent = 'Time:';
 
-            const timeInput = document.createElement('input');
-            timeInput.setAttribute('type', 'time');
-            timeInput.setAttribute('id', 'intakeTime');
-            timeInput.setAttribute('name', 'intakeTime');
-            timeInput.setAttribute('required', 'true');
-
-            form.appendChild(timeInputLabel);
-            form.appendChild(timeInput);
-        } else {
-            console.error('Ingredient intake form not found.');
-        }
-    }
 
     // Call the function to add time input field to the ingredient-only modal form
     window.openIngredientOnlyModal = function () {
         document.getElementById('ingredientOnly').style.display = 'block';
-        addTimeInputToIngredientModal(); // Add time input field to the modal form
-        fillCurrentDateTime(); // Autofill date and time
         fetchCurrentLocation(); // Fetch location when modal is opened
     };
 
@@ -534,10 +522,9 @@ document.addEventListener("DOMContentLoaded", function () {
             recordElement.dataset.recordId = record.IngredientIntakeID;
 
             const intakeDate = new Date(record.IntakeDate).toLocaleDateString();
-            const intakeTime = new Date(record.IntakeTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
 
             const textElement = document.createElement('p');
-            textElement.textContent = `${record.IngredientName}  ${record.Weight}g  ${intakeDate}  ${intakeTime} Location: ${record.Location}`;
+            textElement.textContent = `${record.IngredientName}  ${record.Weight}g  ${intakeDate}  Location: ${record.Location}`;
             recordElement.appendChild(textElement);
 
             const buttonsContainer = document.createElement('div');
@@ -569,13 +556,14 @@ document.addEventListener("DOMContentLoaded", function () {
     // Define the function to delete an ingredient record
     const deleteIngredientRecord = async (ingredientIntakeID) => {
         try {
-            const response = await fetch(`/api/deleteIngredientIntake?id=${ingredientIntakeID}`, {
+            const userID = getUserIDFromURL(); // Get the UserID from the URL
+            const response = await fetch(`/api/deleteIngredientIntake?userID=${userID}&id=${ingredientIntakeID}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json'
                 }
             });
-
+    
             if (response.ok) {
                 // If deletion is successful, remove the deleted record from the UI
                 const deletedRecordElement = document.querySelector(`.ingredientRecord[data-record-id="${ingredientIntakeID}"]`);
@@ -595,7 +583,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // Display error message to the user or handle the error appropriately
         }
     };
-
+    
 
 
 

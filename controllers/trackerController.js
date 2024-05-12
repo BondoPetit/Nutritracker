@@ -232,19 +232,15 @@ router.get('/getIngredientIntake', async (req, res) => {
 
 // Save ingredient intake
 router.post('/saveIngredientIntake', async (req, res) => {
-    const { userID, ingredientName, weight, intakeDate, intakeTime, location, nutritionalData } = req.body;
+    const { userID, ingredientName, weight, intakeDate, location, nutritionalData } = req.body;
     const { energy, protein, fat, fiber } = nutritionalData;
 
-    // Parse the intakeTime string to a Date object
-    const parsedIntakeTime = new Date(intakeTime);
-    if (isNaN(parsedIntakeTime)) {
-        return res.status(400).json({ error: 'Invalid intakeTime format.' });
-    }
+   
 
     // Construct SQL query or update statement
     let query = `
-        INSERT INTO IngredientIntakes (UserID, IngredientName, Weight, IntakeDate, IntakeTime, Location, Energy, Protein, Fat, Fiber)
-        VALUES (@userID, @ingredientName, @weight, @intakeDate, @intakeTime, @location, @energy, @protein, @fat, @fiber)
+        INSERT INTO IngredientIntakes (UserID, IngredientName, Weight, IntakeDate, Location, Energy, Protein, Fat, Fiber)
+        VALUES (@userID, @ingredientName, @weight, @intakeDate, @location, @energy, @protein, @fat, @fiber)
     `;
 
     try {
@@ -254,7 +250,6 @@ router.post('/saveIngredientIntake', async (req, res) => {
             .input('ingredientName', sql.NVarChar, ingredientName)
             .input('weight', sql.Float, weight)
             .input('intakeDate', sql.Date, intakeDate)
-            .input('intakeTime', sql.Time(7), parsedIntakeTime) // Use the parsed intakeTime
             .input('location', sql.NVarChar, location)
             .input('energy', sql.Float, energy) 
             .input('protein', sql.Float, protein)
