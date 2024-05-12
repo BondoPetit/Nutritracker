@@ -326,7 +326,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const weight = parseFloat(document.getElementById('ingredientWeight').value);
         const location = document.getElementById('location').value;
 
-    
+
         // Iterate through each selected ingredient and save the intake
         window.selectedIngredients.forEach(ingredient => {
             const payload = {
@@ -342,7 +342,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     fiber: ingredient.nutrition ? ingredient.nutrition.fiber : 0
                 }
             };
-    
+
             fetch('/api/saveIngredientIntake', {
                 method: 'POST',
                 headers: {
@@ -364,16 +364,16 @@ document.addEventListener("DOMContentLoaded", function () {
                     alert('Error saving the ingredient intake. Please check the console for more details.');
                 });
         });
-    
+
         // Reset selected ingredients array after saving
         window.selectedIngredients = [];
     };
-    
-    
-    
-    
 
 
+
+
+
+    //IngredientIntakes
 
 
 
@@ -417,7 +417,7 @@ document.addEventListener("DOMContentLoaded", function () {
             console.error('Failed to fetch nutrition data:', error);
         }
     }
-    
+
     // Update search results
     function updateSearchResults(data) {
         const container = document.getElementById("searchResultsContainer");
@@ -582,7 +582,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     'Content-Type': 'application/json'
                 }
             });
-    
+
             if (response.ok) {
                 // If deletion is successful, remove the deleted record from the UI
                 const deletedRecordElement = document.querySelector(`.ingredientRecord[data-record-id="${ingredientIntakeID}"]`);
@@ -602,7 +602,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // Display error message to the user or handle the error appropriately
         }
     };
-    
+
 
 
 
