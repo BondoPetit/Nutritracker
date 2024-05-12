@@ -161,3 +161,51 @@
 .mealRecord .buttons-container button {
     margin-left: 10px; /* Add margin between individual buttons */
 }
+
+
+/*IngredientTracker*/
+
+.ingredientRecord {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    border-radius: 30px;
+    padding: 10px;
+    background-color: #DEF6D8;
+    margin-bottom: 10px;
+    color: black;   
+}
+
+/* Ensure text inside ingredientRecord is displayed vertically */
+.ingredientRecordsContainer .ingredientRecord p {
+    white-space: nowrap; /* Prevent text wrapping */
+    writing-mode: vertical-rl; /* Text orientation: vertical, right to left */
+}
+
+.ingredientRecord .buttons-container {
+    display: flex;
+    flex-direction: row; /* Arrange buttons horizontally */
+    align-items: center; /* Align buttons vertically */
+    justify-content: flex-end; /* Align buttons to the right side */
+    margin-top: 10px; /* Add margin to the top of the container */
+}
+
+.ingredientRecord .buttons-container button {
+    margin-left: 10px; /* Add margin between individual buttons */
+}
+
+.ingredientRecord {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Adjust buttons to the right side */
+}
+
+.ingredientData {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+.ingredientRecord p {
+    margin-bottom: 20px; /* Adjust the value as needed */
+    padding-right: 20px; /* Add padding to increase spacing between elements */
+}
