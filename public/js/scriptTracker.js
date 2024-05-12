@@ -237,15 +237,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function showNutritionalData(recordId) {
         const record = mealIntakes.find(record => record.MealIntakeID === recordId);
-
+    
         if (record && record.Calories !== undefined) {
             const nutritionalData = {
-                energy: record.Energy,
-                protein: record.Protein,
-                fat: record.Fat,
-                fiber: record.Fiber
+                energy: record.Calories || 0, 
+                protein: record.Protein || 0,
+                fat: record.Fat || 0,
+                fiber: record.Fiber || 0
             };
-
+    
             const nutritionalInfoContent = document.getElementById('nutritionalInfoContent');
             if (nutritionalInfoContent) {
                 nutritionalInfoContent.innerHTML = `
@@ -253,10 +253,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     <p class="nutritional-text">Energy: ${nutritionalData.energy.toFixed(2)} kcal, Protein: ${nutritionalData.protein.toFixed(2)}g, Fat: ${nutritionalData.fat.toFixed(2)}g, Fiber: ${nutritionalData.fiber.toFixed(2)}g</p>
                 `;
             }
-
+    
             document.getElementById('nutritionalDetailsModal').style.display = 'block';
         }
     }
+    
+    
 
 
     window.deleteMealRecord = function (mealIntakeID) {
@@ -299,11 +301,11 @@ document.addEventListener("DOMContentLoaded", function () {
         event.preventDefault(); // Prevent the default behavior of changing the URL
         const userID = getUserIDFromURL();
         const intakeDate = document.getElementById('intakeDate').value;
-    
+
         window.selectedIngredients.forEach(ingredient => {
             // Get weight from input field
             const weight = parseFloat(document.getElementById('ingredientWeight').value); // Updated ID to 'ingredientWeight'
-    
+
             const payload = {
                 userID: userID,
                 ingredientName: ingredient.ingredientName,
@@ -317,7 +319,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     fiber: ingredient.nutrition ? ingredient.nutrition.fiber : 0
                 }
             };
-    
+
             fetch('/api/saveIngredientIntake', {
                 method: 'POST',
                 headers: {
@@ -325,26 +327,26 @@ document.addEventListener("DOMContentLoaded", function () {
                 },
                 body: JSON.stringify(payload)
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    console.log("Ingredient saved successfully.");
-                    alert('Ingredient saved successfully.');
-                } else {
-                    throw new Error('Failed to save the ingredient intake');
-                }
-            })
-            .catch(error => {
-                console.error('Error saving the ingredient intake:', error);
-                alert('Error saving the ingredient intake. Please check the console for more details.');
-            });
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log("Ingredient saved successfully.");
+                        alert('Ingredient saved successfully.');
+                    } else {
+                        throw new Error('Failed to save the ingredient intake');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error saving the ingredient intake:', error);
+                    alert('Error saving the ingredient intake. Please check the console for more details.');
+                });
         });
-    
+
         window.selectedIngredients = [];
     };
-    
-    
-    
+
+
+
 
     // Function to search for ingredient name
     function getFoodItemsBySearch(query) {
@@ -386,7 +388,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function updateSearchResults(data) {
         const container = document.getElementById("searchResultsContainer");
         container.innerHTML = '';
-    
+
         data.forEach(item => {
             const resultItem = document.createElement('div');
             resultItem.textContent = item.foodName;
@@ -397,6 +399,34 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 
+    // Function to dynamically add time input field to the ingredient-only modal form
+    function addTimeInputToIngredientModal() {
+        const form = document.getElementById('ingredientIntakeForm');
+        if (form) {
+            const timeInputLabel = document.createElement('label');
+            timeInputLabel.setAttribute('for', 'intakeTime');
+            timeInputLabel.textContent = 'Time:';
+
+            const timeInput = document.createElement('input');
+            timeInput.setAttribute('type', 'time');
+            timeInput.setAttribute('id', 'intakeTime');
+            timeInput.setAttribute('name', 'intakeTime');
+            timeInput.setAttribute('required', 'true');
+
+            form.appendChild(timeInputLabel);
+            form.appendChild(timeInput);
+        } else {
+            console.error('Ingredient intake form not found.');
+        }
+    }
+
+    // Call the function to add time input field to the ingredient-only modal form
+    window.openIngredientOnlyModal = function () {
+        document.getElementById('ingredientOnly').style.display = 'block';
+        addTimeInputToIngredientModal(); // Add time input field to the modal form
+        fetchCurrentLocation(); // Fetch location when modal is opened
+    };
+
     function selectIngredient(item) {
         fetchNutritionData(item.foodID).then(nutrition => {
             window.selectedIngredients.push({
@@ -404,7 +434,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 weight: item.weight,  // Assuming weight is provided elsewhere
                 nutrition: nutrition
             });
-    
+
             // Dynamically create the weight input field
             const weightInput = document.createElement('input');
             weightInput.type = 'number';
@@ -413,7 +443,7 @@ document.addEventListener("DOMContentLoaded", function () {
             weightInput.setAttribute('name', 'weight'); // Set the name attribute for form submission
             weightInput.setAttribute('id', 'ingredientWeight'); // Set a unique id for accessing later
             weightInput.setAttribute('min', '0'); // Optionally, set minimum value if needed
-    
+
             // Get the ingredient intake form
             const form = document.getElementById('ingredientIntakeForm');
             if (form) {
@@ -422,12 +452,12 @@ document.addEventListener("DOMContentLoaded", function () {
             } else {
                 console.error('Ingredient intake form not found.');
             }
-    
+
             console.log("Selected Ingredients:", window.selectedIngredients);
         });
     }
-    
-    
+
+
 
 
 
