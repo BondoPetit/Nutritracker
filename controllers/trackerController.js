@@ -278,7 +278,7 @@ router.post('/saveIngredientIntake', async (req, res) => {
 
 // Delete an ingredient intake
 router.delete('/deleteIngredientIntake', async (req, res) => {
-    const ingredientIntakeID = parseInt(req.query.id, 10);
+    const ingredientIntakeID = parseInt(req.query.recordId, 10); // Use recordId instead of id
     try {
         const pool = await getPool();
 
@@ -295,6 +295,8 @@ router.delete('/deleteIngredientIntake', async (req, res) => {
         res.status(500).json({ error: 'An error occurred while deleting the ingredient intake.' });
     }
 });
+
+
 
 
 module.exports = router;

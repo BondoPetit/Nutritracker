@@ -237,15 +237,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function showNutritionalData(recordId) {
         const record = mealIntakes.find(record => record.MealIntakeID === recordId);
-    
+
         if (record && record.Calories !== undefined) {
             const nutritionalData = {
-                energy: record.Calories || 0, 
+                energy: record.Calories || 0,
                 protein: record.Protein || 0,
                 fat: record.Fat || 0,
                 fiber: record.Fiber || 0
             };
-    
+
             const nutritionalInfoContent = document.getElementById('nutritionalInfoContent');
             if (nutritionalInfoContent) {
                 nutritionalInfoContent.innerHTML = `
@@ -253,12 +253,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     <p class="nutritional-text">Energy: ${nutritionalData.energy.toFixed(2)} kcal, Protein: ${nutritionalData.protein.toFixed(2)}g, Fat: ${nutritionalData.fat.toFixed(2)}g, Fiber: ${nutritionalData.fiber.toFixed(2)}g</p>
                 `;
             }
-    
+
             document.getElementById('nutritionalDetailsModal').style.display = 'block';
         }
     }
-    
-    
+
+
 
 
     window.deleteMealRecord = function (mealIntakeID) {
@@ -302,12 +302,12 @@ document.addEventListener("DOMContentLoaded", function () {
         const userID = getUserIDFromURL();
         const intakeDate = document.getElementById('intakeDate').value;
         let intakeTime = document.getElementById('intakeTime').value;
-    
+
         // Check if intakeTime is in the correct format, if not, adjust it
         if (!/^\d{2}:\d{2}:\d{2}$/.test(intakeTime)) {
             intakeTime += ':00'; // Add seconds if they're missing
         }
-    
+
         window.selectedIngredients.forEach(ingredient => {
             const weight = parseFloat(document.getElementById('ingredientWeight').value);
             const payload = {
@@ -324,7 +324,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     fiber: ingredient.nutrition ? ingredient.nutrition.fiber : 0
                 }
             };
-    
+
             fetch('/api/saveIngredientIntake', {
                 method: 'POST',
                 headers: {
@@ -332,24 +332,24 @@ document.addEventListener("DOMContentLoaded", function () {
                 },
                 body: JSON.stringify(payload)
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    console.log("Ingredient saved successfully.");
-                    alert('Ingredient saved successfully.');
-                } else {
-                    throw new Error('Failed to save the ingredient intake');
-                }
-            })
-            .catch(error => {
-                console.error('Error saving the ingredient intake:', error);
-                alert('Error saving the ingredient intake. Please check the console for more details.');
-            });
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log("Ingredient saved successfully.");
+                        alert('Ingredient saved successfully.');
+                    } else {
+                        throw new Error('Failed to save the ingredient intake');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error saving the ingredient intake:', error);
+                    alert('Error saving the ingredient intake. Please check the console for more details.');
+                });
         });
-    
+
         window.selectedIngredients = [];
     };
-    
+
 
 
 
@@ -433,7 +433,7 @@ document.addEventListener("DOMContentLoaded", function () {
         fillCurrentDateTime(); // Autofill date and time
         fetchCurrentLocation(); // Fetch location when modal is opened
     };
-    
+
 
     function selectIngredient(item) {
         fetchNutritionData(item.foodID).then(nutrition => {
@@ -510,82 +510,100 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-// Function to fetch and display ingredient intakes
-async function fetchAndDisplayIngredientIntakes() {
-    try {
-        const response = await fetch(`/api/getIngredientIntakes?userID=${userID}`);
-        const ingredientIntakes = await response.json();
-        displayIngredientIntakes(ingredientIntakes);
-    } catch (error) {
-        console.error("Error fetching ingredient intakes:", error);
-        alert("An error occurred while fetching ingredient intakes. Please try again.");
-    }
-}
-
-
-// Function to display ingredient intakes
-function displayIngredientIntakes(ingredientIntakes) {
-    const ingredientRecordsContainer = document.getElementById('ingredientRecordsContainer');
-    ingredientRecordsContainer.innerHTML = '';
-
-    ingredientIntakes.forEach(record => {
-        const recordElement = document.createElement('div');
-        recordElement.classList.add('ingredientRecord');
-        recordElement.dataset.recordId = record.IngredientIntakeID;
-
-        const intakeDate = new Date(record.IntakeDate).toLocaleDateString();
-        const intakeTime = new Date(record.IntakeTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
-
-        const textElement = document.createElement('p');
-        textElement.textContent = `${record.IngredientName}  ${record.Weight}g  ${intakeDate}  ${intakeTime} Location: ${record.Location}`;
-        recordElement.appendChild(textElement);
-
-        const buttonsContainer = document.createElement('div');
-        buttonsContainer.classList.add('buttons-container');
-
-        const editButton = document.createElement('button');
-        editButton.classList.add('edit-button');
-        editButton.innerHTML = '<i class="fas fa-pencil-alt edit-icon"></i>';
-        editButton.addEventListener('click', function () {
-            trackerPopup(true, record.IngredientIntakeID);
-        });
-        buttonsContainer.appendChild(editButton);
-
-        const deleteButton = document.createElement('button');
-        deleteButton.classList.add('delete-button');
-        deleteButton.innerHTML = '<i class="fas fa-trash-alt delete-icon"></i>';
-        deleteButton.addEventListener('click', function () {
-            deleteIngredientRecord(record.IngredientIntakeID);
-        });
-        buttonsContainer.appendChild(deleteButton);
-
-        recordElement.appendChild(buttonsContainer);
-        ingredientRecordsContainer.appendChild(recordElement);
-    });
-}
-
-
-// Function to delete an ingredient intake record
-async function deleteIngredientIntake(ingredientIntakeID) {
-    try {
-        const response = await fetch(`/api/deleteIngredientIntake?recordId=${ingredientIntakeID}`, {
-            method: 'DELETE'
-        });
-        if (response.ok) {
-            // Adjusted the success message
-            alert("Ingredient intake deleted successfully.");
-            fetchAndDisplayIngredientIntakes(); // Refresh the display after deletion
-        } else {
-            throw new Error('Failed to delete the ingredient intake');
+    // Function to fetch and display ingredient intakes
+    async function fetchAndDisplayIngredientIntakes() {
+        try {
+            const response = await fetch(`/api/getIngredientIntakes?userID=${userID}`);
+            const ingredientIntakes = await response.json();
+            displayIngredientIntakes(ingredientIntakes);
+        } catch (error) {
+            console.error("Error fetching ingredient intakes:", error);
+            alert("An error occurred while fetching ingredient intakes. Please try again.");
         }
-    } catch (error) {
-        console.error('Error deleting the ingredient intake:', error);
-        alert('An error occurred while deleting the ingredient intake. Please try again.');
     }
-}
 
-// Call the function to fetch and display ingredient intakes
-fetchAndDisplayIngredientIntakes();
+
+    // Function to display ingredient intakes
+    function displayIngredientIntakes(ingredientIntakes) {
+        const recordsContainer = document.getElementById('ingredientRecordsContainer');
+        recordsContainer.innerHTML = '';
+
+        ingredientIntakes.forEach(record => {
+            const recordElement = document.createElement('div');
+            recordElement.classList.add('ingredientRecord');
+            recordElement.dataset.recordId = record.IngredientIntakeID;
+
+            const intakeDate = new Date(record.IntakeDate).toLocaleDateString();
+            const intakeTime = new Date(record.IntakeTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
+
+            const textElement = document.createElement('p');
+            textElement.textContent = `${record.IngredientName}  ${record.Weight}g  ${intakeDate}  ${intakeTime} Location: ${record.Location}`;
+            recordElement.appendChild(textElement);
+
+            const buttonsContainer = document.createElement('div');
+            buttonsContainer.classList.add('buttons-container');
+
+            const editButton = document.createElement('button');
+            editButton.classList.add('edit-button');
+            editButton.innerHTML = '<i class="fas fa-pencil-alt edit-icon"></i>';
+            editButton.addEventListener('click', function () {
+                // Handle edit functionality here
+                trackerPopup(true, record.IngredientIntakeID);
+            });
+            buttonsContainer.appendChild(editButton);
+
+            const deleteButton = document.createElement('button');
+            deleteButton.classList.add('delete-button');
+            deleteButton.innerHTML = '<i class="fas fa-trash-alt delete-icon"></i>';
+            deleteButton.addEventListener('click', function (event) {
+                const recordId = event.target.closest('.ingredientRecord').dataset.recordId;
+                deleteIngredientRecord(recordId);
+            });
+            buttonsContainer.appendChild(deleteButton);
+
+            recordElement.appendChild(buttonsContainer);
+            recordsContainer.appendChild(recordElement);
+        });
+    }
+
+    // Define the function to delete an ingredient record
+    const deleteIngredientRecord = async (ingredientIntakeID) => {
+        try {
+            const response = await fetch(`/api/deleteIngredientIntake?id=${ingredientIntakeID}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                // If deletion is successful, remove the deleted record from the UI
+                const deletedRecordElement = document.querySelector(`.ingredientRecord[data-record-id="${ingredientIntakeID}"]`);
+                if (deletedRecordElement) {
+                    deletedRecordElement.remove();
+                }
+                console.log('Ingredient intake deleted successfully.');
+            } else {
+                // Handle error response
+                const errorData = await response.json();
+                console.error('Error deleting ingredient intake:', errorData.error);
+                // Display error message to the user or handle the error appropriately
+            }
+        } catch (error) {
+            // Handle network errors or other exceptions
+            console.error('Error deleting ingredient intake:', error);
+            // Display error message to the user or handle the error appropriately
+        }
+    };
+
+
+
+
+
+
+
+    // Call the function to fetch and display ingredient intakes
+    fetchAndDisplayIngredientIntakes();
 
 
 
