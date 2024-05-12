@@ -11,15 +11,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-
-
+// Function to extract the userID from the query string
 function getUserIdFromQueryString() {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get('userID');
 }
 
-
-
+// Function to display user data in the UI
 function displayUserData(userData) {
     if (userData) {
         document.getElementById('email').innerText = userData.Email || '';
@@ -35,10 +33,10 @@ function displayUserData(userData) {
                 submitUserData();
             });
         });
-
     }
 }
 
+// Function to fetch user data from the server
 async function fetchUserData() {
     const userID = getUserIdFromQueryString();
     if (!userID) {
@@ -61,8 +59,7 @@ async function fetchUserData() {
     }
 }
 
-
-
+// Function to submit updated user data to the server
 async function submitUserData() {
     const userID = getUserIdFromQueryString();
     const email = document.getElementById('email').innerText;
@@ -90,9 +87,7 @@ async function submitUserData() {
     }
 }
 
-
-
-
+// Function to delete user account
 async function deleteUser() {
     const userID = getUserIdFromQueryString();
     if (!userID) {
@@ -116,4 +111,3 @@ async function deleteUser() {
         alert('Error while deleting user. Please check console for details.');
     }
 }
-

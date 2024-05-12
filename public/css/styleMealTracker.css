@@ -102,7 +102,7 @@
     padding: 20px;
     border: 1px solid #888;
     width: 80%;
-    max-width: 600px; /* Adjust width as needed */
+    max-width: 600px;
     position: absolute;
     left: 50%;
     top: 50%;
@@ -126,7 +126,7 @@
 .mealRecord {
     display: flex;
     align-items: center;
-    justify-content: center; /* Juster knapper til højre side */
+    justify-content: center;
 }
 
 .mealData {

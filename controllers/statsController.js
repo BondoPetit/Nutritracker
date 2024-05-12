@@ -1,13 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const sql = require('mssql');
-const { getPool } = require('../database'); // Adjust the path as necessary
+const { getPool } = require('../database');
 
 // Route to update user data
 router.post('/updateUserData', async (req, res) => {
+    // Extract user data from request body
     const { userID, height, weight, age, gender } = req.body;
     try {
         const pool = await getPool();
+        // Check if the user exists
         const userResult = await pool.request()
             .input('userID', sql.Int, userID)
             .query(`
@@ -19,6 +21,7 @@ router.post('/updateUserData', async (req, res) => {
             res.status(404).send('User not found');
             return;
         }
+        // Update user data in UserDetails table
         await pool.request()
             .input('height', sql.Float, height)
             .input('weight', sql.Float, weight)
@@ -42,6 +45,7 @@ router.get('/getUserData', async (req, res) => {
     const userID = req.query.userID;
     try {
         const pool = await getPool();
+        // Fetch user data from Users and UserDetails tables
         const result = await pool.request()
             .input('userID', sql.Int, userID)
             .query(`
@@ -62,34 +66,27 @@ router.get('/getUserData', async (req, res) => {
     }
 });
 
-
 // Route to delete user account and associated data
 router.delete('/deleteUser', async (req, res) => {
     const { userID } = req.query;
     try {
         const pool = await getPool();
-        
-        // First delete dependent data in BasalMetabolism
+        // Delete user-related data from BasalMetabolism and UserDetails tables
         await pool.request()
             .input('userID', sql.Int, userID)
             .query('DELETE FROM BasalMetabolism WHERE UserID = @userID');
-
-        // Then delete the user
         await pool.request()
             .input('userID', sql.Int, userID)
             .query('DELETE FROM UserDetails WHERE UserID = @userID');
+        // Delete user from Users table
         await pool.request()
             .input('userID', sql.Int, userID)
             .query('DELETE FROM Users WHERE UserID = @userID');
-
         res.sendStatus(200);
     } catch (err) {
         console.error('Error deleting user:', err);
         res.status(500).send('Failed to delete user');
     }
 });
-
-
-
 
 module.exports = router;

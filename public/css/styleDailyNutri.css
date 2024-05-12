@@ -1,7 +1,7 @@
 #dailyNutriContainer {
     gap: 20px; /* Added spacing between elements */
     overflow-y: auto;
-    margin-right: 10px; /* Tilføj mellemrum til højre side af hvert element */
+    margin-right: 10px;
 }
 
 /* Style for the list items displaying hourly intake data */

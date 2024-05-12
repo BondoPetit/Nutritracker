@@ -2,28 +2,37 @@
 <html lang="en">
 
 <head>
+    <!-- Meta tags -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="/css/styleLogin.css">
     <link rel="stylesheet" href="/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css">
+    
+    <!-- Title -->
     <title>Login</title>
+    
+    <!-- Font Awesome script -->
     <script src="https://kit.fontawesome.com/35a02f4c06.js" crossorigin="anonymous"></script>
 </head>
 
 <body>
+    <!-- Background image -->
     <img src="/nav.jpg" alt="navPic" class="background-image">
 
     <div class="content">
+        <!-- Navigation field -->
         <div class="nav-field">
             <img src="/ablelogo.jpg" alt="ablelogo" class="ablelogo">
             <h1 class="logo">NutriTracker</h1>
         </div>
 
-        <br><br><br><br><br>
-        
+        <!-- Form box for registration and login -->
         <div class="form-box">
+            <!-- Registration form -->
             <h1>Register</h1>
             <form action="/register" method="post">
                 <div class="input-field">
@@ -37,8 +46,8 @@
                 <button type="submit">Opret bruger</button>
             </form>
 
+            <!-- Login form -->
             <br><br><br>
-
             <h1>Log ind</h1>
             <form action="/login" method="post">
                 <div class="input-field">
@@ -53,8 +62,9 @@
             </form>
         </div>
     </div>
+    
+    <!-- JavaScript import for navigation -->
     <script type="module" src="/js/scriptNav.js"></script>
 </body>
 
 </html>
-

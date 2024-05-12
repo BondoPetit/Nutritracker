@@ -2,18 +2,26 @@
 <html lang="en">
 
 <head>
+    <!-- Meta tags -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/styleActivity.css">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css">
+    
+    <!-- Title -->
     <title>Activity Tracker</title>
 </head>
 
 <body>
+    <!-- Background image -->
     <img src="/nav.jpg" alt="navPic" class="background-image">
+    
     <div class="content">
+        <!-- Navigation menu -->
         <div class="nav-field">
             <img src="/ablelogo.jpg" alt="ablelogo" class="ablelogo">
             <h1 class="logo">NutriTracker</h1>
@@ -23,7 +31,6 @@
             <h3 class="overskrifter"><a href="/DailyNutri.html">Daily Nutri</a></h3>
             <h3 class="overskrifter"><a href="/MyStats.html">My Stats</a></h3>
         </div>
-
 
         <!-- Main Form for Activity Tracker -->
         <form class="form-box">
@@ -37,29 +44,34 @@
                 <option value="work">Work Activities</option>
             </select><br><br>
         
+            <!-- Select activity dropdown -->
             <label for="activity">Select Activity:</label>
             <select id="activity" name="activity" required>
                 <option value="" disabled selected>Select an activity...</option>
             </select><br><br>
         
+            <!-- Duration input -->
             <label for="duration">Duration (minutes):</label>
             <input type="number" id="duration" name="duration" min="1" required><br><br>
         
+            <!-- Calories information container -->
             <div id="caloriesInfo"></div>
         
+            <!-- Date input -->
             <label for="date">Date:</label>
             <input type="date" id="date" name="date" required><br><br>
         
+            <!-- Time input -->
             <label for="time">Time:</label>
             <input type="time" id="time" name="time" required><br><br>
         
             <!-- Star icon to open modal -->
             <i id="modalTrigger" class="fas fa-apple-alt"></i>
         
+            <!-- Submit button -->
             <input type="submit" value="Calculate Calories">
         </form>
         
-
         <!-- Modal for Basal Metabolism -->
         <div id="activityModal" class="modal">
             <div class="modal-content">
@@ -79,14 +91,15 @@
 
                 <button id="calculateMetabolism">Calculate Basal Metabolism</button>
 
+                <!-- Metabolism calculation result -->
                 <div id="metabolismResult"></div>
             </div>
         </div>
     </div>
+    
+    <!-- JavaScript imports -->
     <script type="module" src="/js/scriptNav.js"></script>
     <script type="module" src="/js/scriptActivity.js"></script>
 </body>
 
 </html>
-
-

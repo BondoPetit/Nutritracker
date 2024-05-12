@@ -2,20 +2,28 @@
 <html lang="en">
 
 <head>
+    <!-- Meta tags -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="/css/styleLogin.css">
     <link rel="stylesheet" href="/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css">
+    
+    <!-- Title -->
     <title>My Profile</title>
+    <!-- Font Awesome script -->
     <script src="https://kit.fontawesome.com/35a02f4c06.js" crossorigin="anonymous"></script>
 </head>
 
 <body>
+    <!-- Background image -->
     <img src="/nav.jpg" alt="navPic" class="background-image">
 
     <div class="content">
+        <!-- Navigation field -->
         <div class="nav-field">
             <img src="/ablelogo.jpg" alt="ablelogo" class="ablelogo">
             <h1 class="logo">NutriTracker</h1>
@@ -25,6 +33,7 @@
         <div class="form-box">
             <h1>My Body</h1>
             <form id="bodyDataForm" action="/submit-body-data" method="post">
+                <!-- Hidden input field for user ID -->
                 <input type="hidden" id="userIDInput" name="userID" value="">
                 <label for="height">Height (cm):</label>
                 <input type="text" id="height" name="height" required><br>
@@ -40,12 +49,10 @@
                 </select><br>
                 <button type="submit">Submit</button>
             </form>
-            
         </div>
     </div>
+    <!-- JavaScript import for profile functionality -->
     <script type="module" src="/js/scriptProfile.js"></script>
 </body>
 
 </html>
-
-

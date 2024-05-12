@@ -1,3 +1,4 @@
+// When the DOM content is fully loaded
 document.addEventListener('DOMContentLoaded', () => {
     const userID = getUserIdFromQueryString(); // Extract userID from query string
 
@@ -13,15 +14,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// Function to extract userID from the query string
 function getUserIdFromQueryString() {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get('userID');
 }
 
+// Function to update the href attribute with the userID
 function updateHrefWithUserID(href, userID) {
     const url = new URL(href, window.location.origin);
     url.searchParams.set('userID', userID);
     return url.toString();
 }
-
-

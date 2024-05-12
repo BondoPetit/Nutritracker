@@ -1,8 +1,10 @@
+// When the DOM content is fully loaded
 document.addEventListener("DOMContentLoaded", function () {
     // Extract userID from URL
     const urlParams = new URLSearchParams(window.location.search);
     const userID = parseInt(urlParams.get("userID"), 10);
 
+    // Function to fetch nutritional intake data from the provided URL
     async function fetchNutritionalIntake(url) {
         const response = await fetch(url);
         if (!response.ok) {
@@ -15,6 +17,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return data;
     }
 
+    // Function to format date to DD-MM-YYYY format
     function formatDateToDMY(date) {
         const day = ("0" + date.getDate()).slice(-2);
         const month = ("0" + (date.getMonth() + 1)).slice(-2);
@@ -22,6 +25,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return `${day}-${month}-${year}`;
     }
 
+    // Function to display nutritional intake data in the specified container
     function displayNutritionalIntake(data, containerId, viewType) {
         const dailyNutriContainer = document.getElementById(containerId);
         dailyNutriContainer.innerHTML = ''; // Clear existing content
@@ -42,6 +46,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    // Function to asynchronously display daily nutritional intake based on viewType
     async function displayDailyNutritionalIntake(viewType = '24hours') {
         let url;
         if (viewType === '24hours') {
@@ -55,7 +60,7 @@ document.addEventListener("DOMContentLoaded", function () {
             displayNutritionalIntake(data, 'dailyNutriContainer', viewType);
         } catch (error) {
             console.error("Error displaying nutritional intake:", error);
-            document.getElementById('dailyNutriContainer'). textContent = `Error: ${error.message}`;
+            document.getElementById('dailyNutriContainer').textContent = `Error: ${error.message}`;
         }
     }
 
@@ -63,8 +68,6 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("view24hours").addEventListener("click", () => displayDailyNutritionalIntake('24hours'));
     document.getElementById("viewMonth").addEventListener("click", () => displayDailyNutritionalIntake('month'));
 
-    // Default view
+    // Default view: Display daily nutritional intake for the past 24 hours
     displayDailyNutritionalIntake('24hours');
 });
-
-

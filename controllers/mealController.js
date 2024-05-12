@@ -1,11 +1,11 @@
 const express = require('express');
 const sql = require('mssql');
 const router = express.Router();
-const { getPool } = require('../database'); // Adjust the path as necessary
-
+const { getPool } = require('../database');
 
 // Fetch all meals and their ingredients for a user
 router.get('/getMeals', async (req, res) => {
+    // Extract user ID from query string
     const userID = parseInt(req.query.userID, 10);
     try {
         const pool = await getPool();
@@ -44,6 +44,7 @@ router.get('/getMeals', async (req, res) => {
 
 // Fetch a specific meal by ID
 router.get('/getMeal', async (req, res) => {
+    // Extract meal ID from query string
     const mealID = parseInt(req.query.id, 10);
     try {
         const pool = await getPool();
@@ -159,6 +160,7 @@ router.post('/saveMeal', async (req, res) => {
 
 // Delete a meal
 router.delete('/deleteMeal', async (req, res) => {
+    // Extract meal ID from query string
     const mealID = parseInt(req.query.mealID, 10);
     try {
         const pool = await getPool();
@@ -187,5 +189,3 @@ router.delete('/deleteMeal', async (req, res) => {
 });
 
 module.exports = router;
-
-

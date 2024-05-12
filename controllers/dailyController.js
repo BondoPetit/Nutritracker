@@ -3,9 +3,9 @@ const sql = require('mssql');
 const router = express.Router();
 const { getPool } = require('../database');
 
-
 // Get nutritional data for the last 24 hours
 router.get('/getDailyNutri24', async (req, res) => {
+    // Extract user ID from query string
     const userID = parseInt(req.query.userID, 10);
     const endDateTime = new Date();
     const startDateTime = new Date();
@@ -90,6 +90,7 @@ router.get('/getDailyNutri24', async (req, res) => {
 
 // Get nutritional data for the last month (daily)
 router.get('/getDailyNutriMonth', async (req, res) => {
+    // Extract user ID from query string
     const userID = parseInt(req.query.userID, 10);
 
     try {
@@ -169,5 +170,3 @@ router.get('/getDailyNutriMonth', async (req, res) => {
 });
 
 module.exports = router;
-
-

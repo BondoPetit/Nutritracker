@@ -1,6 +1,6 @@
 const express = require('express');
-const sql = require('mssql');
 const router = express.Router();
+const sql = require('mssql');
 const { getPool } = require('../database');
 
 // Fetch all meal intakes for a user
@@ -26,7 +26,7 @@ router.get('/getMealIntakes', async (req, res) => {
 
 // Fetch a specific meal intake by ID
 router.get('/getMealIntake', async (req, res) => {
-    const mealIntakeID = parseInt(req.query.id, 10); // Changed from 'recordId' to 'id'
+    const mealIntakeID = parseInt(req.query.id, 10);
     try {
         const pool = await getPool();
 
@@ -49,44 +49,29 @@ router.get('/getMealIntake', async (req, res) => {
     }
 });
 
-
 // Save or update a meal intake
 router.post('/saveMealIntake', async (req, res) => {
     const { id, userID, mealID, name, weight, date, time, location, nutritionalData } = req.body;
     let calculatedNutritionalData = nutritionalData;
 
     try {
-        console.log('Request received:', req.body);
         const pool = await getPool();
+        console.log('Request received:', req.body);
+        const intakeHour = parseInt(time.split(':')[0], 10) % 24; // Ensure hour value stays within 0-23
+        const intakeTime = new Date(1970, 0, 1, intakeHour, time.split(':')[1], time.split(':')[2]); // Convert time string to Date object
+        intakeTime.setHours(intakeTime.getHours() + 1); // Adding one hour to intakeTime
 
-        console.log('ID:', id); // Log the value of id parameter
-
-        // Convert the time string into a Date object
-        const [hours, minutes, seconds] = time.split(':');
-        let intakeHour = parseInt(hours, 10);
-
-
-        // Ensure the hour value stays within the range of 0-23
-        intakeHour = intakeHour % 24;
-
-        const intakeTime = new Date(1970, 0, 1, intakeHour, minutes, seconds);
-        // Adding one hour to intakeTime
-        intakeTime.setHours(intakeTime.getHours() + 1);
-
-        // Fetch the nutritional information from the Meals table based on MealID
         const mealQueryResult = await pool.request()
             .input('mealID', sql.Int, mealID)
             .query(`
                 SELECT MealID, Calories, Protein, Fat, Fiber FROM Meals WHERE MealID = @mealID
             `);
 
-        // Handle case when meal not found
         if (mealQueryResult.recordset.length === 0) {
             console.log('Meal not found in database.');
             return res.status(404).json({ error: 'Meal not found.' });
         }
 
-        // If nutritionalData is not provided, use the values from the Meals table
         if (!calculatedNutritionalData) {
             const mealData = mealQueryResult.recordset[0];
             calculatedNutritionalData = {
@@ -97,9 +82,8 @@ router.post('/saveMealIntake', async (req, res) => {
             };
         }
 
-        // Include the id parameter in the request body if editing a meal intake
         const requestBody = {
-            id: id, // Include the id parameter
+            id: id,
             userID: userID,
             mealID: mealID,
             name: name,
@@ -111,29 +95,27 @@ router.post('/saveMealIntake', async (req, res) => {
         };
 
         if (id) {
-            // If id is provided, update the existing record
             console.log('Updating existing meal intake with ID:', id);
             await pool.request()
-            .input('mealIntakeID', sql.Int, id)
-            .input('userID', sql.Int, userID)
-            .input('mealID', sql.Int, mealID)
-            .input('name', sql.NVarChar, name)
-            .input('weight', sql.Float, weight)
-            .input('intakeDate', sql.Date, date)
-            .input('intakeTime', sql.Time(7), intakeTime) // Using intakeTime parameter
-            .input('location', sql.NVarChar, location)
-            .input('calories', sql.Float, calculatedNutritionalData.energy)
-            .input('protein', sql.Float, calculatedNutritionalData.protein)
-            .input('fat', sql.Float, calculatedNutritionalData.fat)
-            .input('fiber', sql.Float, calculatedNutritionalData.fiber)
-            .query(`
-                UPDATE MealIntakes
-                SET UserID = @userID, MealID = @mealID, MealName = @name, Weight = @weight, IntakeDate = @intakeDate, IntakeTime = @intakeTime,
-                    Location = @location, Calories = @calories, Protein = @protein, Fat = @fat, Fiber = @fiber
-                WHERE MealIntakeID = @mealIntakeID
-            `);
+                .input('mealIntakeID', sql.Int, id)
+                .input('userID', sql.Int, userID)
+                .input('mealID', sql.Int, mealID)
+                .input('name', sql.NVarChar, name)
+                .input('weight', sql.Float, weight)
+                .input('intakeDate', sql.Date, date)
+                .input('intakeTime', sql.Time(7), intakeTime)
+                .input('location', sql.NVarChar, location)
+                .input('calories', sql.Float, calculatedNutritionalData.energy)
+                .input('protein', sql.Float, calculatedNutritionalData.protein)
+                .input('fat', sql.Float, calculatedNutritionalData.fat)
+                .input('fiber', sql.Float, calculatedNutritionalData.fiber)
+                .query(`
+                    UPDATE MealIntakes
+                    SET UserID = @userID, MealID = @mealID, MealName = @name, Weight = @weight, IntakeDate = @intakeDate, IntakeTime = @intakeTime,
+                        Location = @location, Calories = @calories, Protein = @protein, Fat = @fat, Fiber = @fiber
+                    WHERE MealIntakeID = @mealIntakeID
+                `);
         } else {
-            // If id is not provided, insert a new record
             console.log('Inserting new meal intake.');
             await pool.request()
                 .input('userID', sql.Int, userID)
@@ -160,10 +142,6 @@ router.post('/saveMealIntake', async (req, res) => {
     }
 });
 
-
-
-
-
 // Delete a meal intake
 router.delete('/deleteMealIntake', async (req, res) => {
     const mealIntakeID = parseInt(req.query.recordId, 10);
@@ -183,7 +161,6 @@ router.delete('/deleteMealIntake', async (req, res) => {
         res.status(500).json({ error: 'An error occurred while deleting the meal intake.' });
     }
 });
-
 
 // Fetch all ingredient intakes for a user
 router.get('/getIngredientIntakes', async (req, res) => {
@@ -235,9 +212,6 @@ router.post('/saveIngredientIntake', async (req, res) => {
     const { userID, ingredientName, weight, intakeDate, location, nutritionalData } = req.body;
     const { energy, protein, fat, fiber } = nutritionalData;
 
-   
-
-    // Construct SQL query or update statement
     let query = `
         INSERT INTO IngredientIntakes (UserID, IngredientName, Weight, IntakeDate, Location, Energy, Protein, Fat, Fiber)
         VALUES (@userID, @ingredientName, @weight, @intakeDate, @location, @energy, @protein, @fat, @fiber)
@@ -251,7 +225,7 @@ router.post('/saveIngredientIntake', async (req, res) => {
             .input('weight', sql.Float, weight)
             .input('intakeDate', sql.Date, intakeDate)
             .input('location', sql.NVarChar, location)
-            .input('energy', sql.Float, energy) 
+            .input('energy', sql.Float, energy)
             .input('protein', sql.Float, protein)
             .input('fat', sql.Float, fat)
             .input('fiber', sql.Float, fiber)
@@ -264,16 +238,9 @@ router.post('/saveIngredientIntake', async (req, res) => {
     }
 });
 
-
-
-
-
-
-
-
 // Delete an ingredient intake
 router.delete('/deleteIngredientIntake', async (req, res) => {
-    const ingredientIntakeID = parseInt(req.query.recordId, 10); // Use recordId instead of id
+    const ingredientIntakeID = parseInt(req.query.recordId, 10);
     try {
         const pool = await getPool();
 
@@ -290,8 +257,5 @@ router.delete('/deleteIngredientIntake', async (req, res) => {
         res.status(500).json({ error: 'An error occurred while deleting the ingredient intake.' });
     }
 });
-
-
-
 
 module.exports = router;

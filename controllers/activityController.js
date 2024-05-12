@@ -1,15 +1,15 @@
+// Import required modules
 const express = require('express');
 const sql = require('mssql');
 const router = express.Router();
-const { getPool } = require('../database'); // Adjust the path as necessary
-
+const { getPool } = require('../database');
 
 // Save or update an activity
 router.post('/saveActivity', async (req, res) => {
+    // Extract data from request body and query string
     const { id, activityName, duration, date, time, caloriesBurned } = req.body;
     const userIDFromQueryString = req.query.userID;
     const userID = parseInt(userIDFromQueryString, 10); // Extract and parse userID from request URL
-    
 
     try {
         const pool = await getPool();
@@ -52,6 +52,7 @@ router.post('/saveActivity', async (req, res) => {
 
         res.status(200).json({ success: true });
     } catch (err) {
+        // Handle errors
         console.error('Error saving activity:', err);
         res.status(500).json({ error: 'An error occurred while saving the activity.' });
     }
@@ -59,11 +60,13 @@ router.post('/saveActivity', async (req, res) => {
 
 // Fetch all activities for a user
 router.get('/getActivities', async (req, res) => {
+    // Extract user ID from query string
     const userID = parseInt(req.query.userID, 10);
 
     try {
         const pool = await getPool();
 
+        // Query database for user's activities
         const result = await pool.request()
             .input('userID', sql.Int, userID)
             .query(`
@@ -72,17 +75,18 @@ router.get('/getActivities', async (req, res) => {
                 WHERE UserID = @userID
             `);
 
+        // Send activities data as response
         res.status(200).json(result.recordset);
     } catch (err) {
+        // Handle errors
         console.error('Error fetching activities:', err);
         res.status(500).json({ error: 'An error occurred while fetching activities.' });
     }
 });
 
-
-
 // Save or update basal metabolism
 router.post('/saveBasalMetabolism', async (req, res) => {
+    // Extract userID and basalMetabolism from request body
     const { userID, basalMetabolism } = req.body;
 
     try {
@@ -116,13 +120,13 @@ router.post('/saveBasalMetabolism', async (req, res) => {
                 `);
         }
 
+        // Send success response
         res.status(200).json({ success: true });
     } catch (err) {
+        // Handle errors
         console.error('Error saving basal metabolism:', err);
         res.status(500).json({ error: 'An error occurred while saving basal metabolism.' });
     }
 });
 
-
 module.exports = router;
-

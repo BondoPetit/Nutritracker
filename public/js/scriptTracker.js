@@ -1,13 +1,18 @@
+// Wait for the DOM content to be fully loaded before executing the code
 document.addEventListener("DOMContentLoaded", function () {
+    // Get the user ID from the URL query parameter
     const userID = getUserIDFromURL();
+    // Initialize arrays to store meal intakes and meals
     let mealIntakes = [];
     let meals = [];
 
+    // Function to extract the user ID from the URL query parameter
     function getUserIDFromURL() {
         const urlParams = new URLSearchParams(window.location.search);
         return parseInt(urlParams.get('userID'), 10);
     }
 
+    // Asynchronous function to fetch meals from the server
     async function fetchMeals() {
         try {
             const response = await fetch(`/api/getMeals?userID=${userID}`);
@@ -18,6 +23,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    // Function to fetch meal intakes from the server
     function fetchMealIntakes() {
         fetch(`/api/getMealIntakes?userID=${userID}`)
             .then(response => {
@@ -36,6 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     }
 
+    // Function to display the meal intake popup
     window.trackerPopup = async function (editMode = false, recordId = null) {
         document.getElementById('mealPopUp').style.display = 'block';
         await populateTrackerModal(editMode, recordId);
@@ -43,15 +50,19 @@ document.addEventListener("DOMContentLoaded", function () {
         fetchCurrentLocation();
     };
 
+    // Function to close the meal intake popup
     window.closeTrackerPopup = function () {
         document.getElementById('mealPopUp').style.display = 'none';
     };
 
+    // Function to close the nutritional info modal
     window.closeNutritionalInfoModal = function () {
         document.getElementById('nutritionalDetailsModal').style.display = 'none';
     };
 
+    // Function to save a meal intake
     window.saveTracker = function () {
+        // Retrieve input values
         const mealID = parseInt(document.getElementById('mealName').value, 10);
         const mealName = document.getElementById('mealName').selectedOptions[0].textContent;
         const mealWeight = parseFloat(document.getElementById('mealWeight').value);
@@ -61,6 +72,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const userID = getUserIDFromURL();
         const editMode = document.getElementById('mealIntakeForm').getAttribute('data-edit-mode') === 'true';
 
+        // Create a new record object
         const newRecord = {
             userID: userID,
             mealID: mealID,
@@ -71,10 +83,12 @@ document.addEventListener("DOMContentLoaded", function () {
             location: location,
         };
 
+        // Add record ID if in edit mode
         if (editMode) {
             newRecord.id = parseInt(document.getElementById('mealIntakeForm').getAttribute('data-record-id'), 10);
         }
 
+        // Send a POST request to save the meal intake
         fetch('/api/saveMealIntake', {
             method: 'POST',
             headers: {
@@ -97,6 +111,7 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     };
 
+    // Function to fill current date and time in the form
     function fillCurrentDateTime() {
         const now = new Date();
         const dateInput = document.getElementById('intakeDate');
@@ -109,6 +124,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    // Function to fetch current location and display it in the form
     function fetchCurrentLocation() {
         const locationInput = document.getElementById('location');
         if (locationInput && navigator.geolocation) {
@@ -130,12 +146,16 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-
+    // Asynchronous function to populate the meal intake modal
     async function populateTrackerModal(editMode, recordId = null) {
         try {
+            // Fetch meals
             await fetchMeals();
+            // Generate HTML for meal selector
             const mealSelectorHTML = meals.map(meal => `<option value="${meal.MealID}">${meal.Name}</option>`).join('');
+            // Get the modal content element
             const modalContent = document.querySelector('#mealPopUp .modal-content');
+            // Populate modal content
             modalContent.innerHTML = `<span class="close" onclick="closeTrackerPopup()">&times;</span>
             <h2>${editMode ? 'Edit' : 'Add'} Meal Intake</h2>
             <form id="mealIntakeForm" data-edit-mode="${editMode}" data-record-id="${recordId}">
@@ -153,6 +173,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 <button type="button" onclick="saveTracker()">Save Meal Intake</button>
             </form>`;
 
+            // Pre-fill form fields for editing existing meal intakes
             if (editMode && recordId !== null) {
                 const response = await fetch(`/api/getMealIntake?id=${recordId}`);
                 const record = await response.json();
@@ -181,10 +202,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-
-
-
-
+    // Function to display meal intake records
     function displayMeals() {
         const recordsContainer = document.getElementById('recordsContainer');
         recordsContainer.innerHTML = '';
@@ -197,7 +215,6 @@ document.addEventListener("DOMContentLoaded", function () {
             const intakeDate = new Date(record.IntakeDate).toLocaleDateString();
             const intakeTime = new Date(record.IntakeTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
 
-
             const textElement = document.createElement('p');
             textElement.textContent = `${record.MealName}  ${record.Weight}g  ${intakeDate}  ${intakeTime} Location: ${record.Location}`;
             recordElement.appendChild(textElement);
@@ -205,6 +222,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const buttonsContainer = document.createElement('div');
             buttonsContainer.classList.add('buttons-container');
 
+            // Edit button
             const editButton = document.createElement('button');
             editButton.classList.add('edit-button');
             editButton.innerHTML = '<i class="fas fa-pencil-alt edit-icon"></i>';
@@ -213,6 +231,7 @@ document.addEventListener("DOMContentLoaded", function () {
             });
             buttonsContainer.appendChild(editButton);
 
+            // Delete button
             const deleteButton = document.createElement('button');
             deleteButton.classList.add('delete-button');
             deleteButton.innerHTML = '<i class="fas fa-trash-alt delete-icon"></i>';
@@ -221,6 +240,7 @@ document.addEventListener("DOMContentLoaded", function () {
             });
             buttonsContainer.appendChild(deleteButton);
 
+            // Nutritional data button
             const nutritionalDataButton = document.createElement('button');
             nutritionalDataButton.classList.add('show-nutritional-data-button');
             nutritionalDataButton.innerHTML = '<i class="fas fa-book book-icon"></i>';
@@ -235,6 +255,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    // Function to show nutritional data for a meal intake
     function showNutritionalData(recordId) {
         const record = mealIntakes.find(record => record.MealIntakeID === recordId);
 
@@ -258,9 +279,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-
-
-
+    // Function to delete a meal intake record
     window.deleteMealRecord = function (mealIntakeID) {
         fetch(`/api/deleteMealIntake?recordId=${mealIntakeID}`, {
             method: 'DELETE'
@@ -280,33 +299,33 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     };
 
+    // Fetch meal intakes when the page loads
     fetchMealIntakes();
 
-
+    // Initialize array to store selected ingredients
     window.selectedIngredients = [];
 
-
- 
-
+    // Function to close the ingredient modal
     window.closeIngredientOnlyModal = function () {
         document.getElementById('ingredientOnly').style.display = 'none';
     };
 
-
+    // Function to save selected ingredients
     window.saveIngredient = function (event) {
         if (event) {
             event.preventDefault(); // Prevent the default behavior of form submission
         }
-    
+
         if (window.selectedIngredients.length === 0) {
             alert('Please select at least one ingredient.');
             return;
         }
-    
+
         const userID = getUserIDFromURL();
         const intakeDate = document.getElementById('intakeDate').value;
         const weight = parseFloat(document.getElementById('ingredientWeight').value);
         const location = document.getElementById('location').value;
+
     
         // Iterate through each selected ingredient and save the intake
         window.selectedIngredients.forEach(ingredient => {
