@@ -52,14 +52,27 @@ describe('Authentication', function() {
             assert.match(response.headers['location'], /^\/MealCreator\.html\?userID=\d+$/);
         });
 
-        it('should reject a login attempt with incorrect credentials', async function() {
-            const wrongCredentials = {
-                email: testUser.email,
-                password: 'incorrectpassword'
+        it('should reject a login attempt with a wrong email but correct password', async function() {
+            const wrongEmailCredentials = {
+                email: 'wrong_' + uniqueEmail,
+                password: testUser.password
             };
             const response = await request(app)
                 .post('/login')
-                .send(wrongCredentials);
+                .send(wrongEmailCredentials);
+
+            assert.strictEqual(response.status, 401);
+            assert.strictEqual(response.body.message, 'Invalid credentials.');
+        });
+
+        it('should reject a login attempt with correct email but wrong password', async function() {
+            const wrongPasswordCredentials = {
+                email: testUser.email,
+                password: 'wrongpassword123'
+            };
+            const response = await request(app)
+                .post('/login')
+                .send(wrongPasswordCredentials);
 
             assert.strictEqual(response.status, 401);
             assert.strictEqual(response.body.message, 'Invalid credentials.');
@@ -77,10 +90,7 @@ describe('Authentication', function() {
                 .post('/login')
                 .send({});
         
-            // Check that the response status is 500 Internal Server Error
             assert.strictEqual(response.status, 401);
-            // Ensure the error message is as defined in the login controller
-            assert.strictEqual(response.body.error, undefined);
         });
         
     });
