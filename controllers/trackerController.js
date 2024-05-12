@@ -184,6 +184,107 @@ router.delete('/deleteMealIntake', async (req, res) => {
     }
 });
 
+
+// Fetch all ingredient intakes for a user
+router.get('/getIngredientIntakes', async (req, res) => {
+    const userID = parseInt(req.query.userID, 10);
+    try {
+        const pool = await getPool();
+        const result = await pool.request()
+            .input('userID', sql.Int, userID)
+            .query(`
+                SELECT IngredientIntakeID, UserID, MealName, Weight, CONVERT(date, IntakeDate) AS IntakeDate, Location, Energy, Protein, Fat, Fiber
+                FROM IngredientIntakes
+                WHERE UserID = @userID
+            `);
+
+        res.status(200).json(result.recordset);
+    } catch (err) {
+        console.error('Error fetching ingredient intakes:', err);
+        res.status(500).json({ error: 'An error occurred while fetching ingredient intakes.' });
+    }
+});
+
+// Fetch a specific ingredient intake by ID
+router.get('/getIngredientIntake', async (req, res) => {
+    const ingredientIntakeID = parseInt(req.query.id, 10);
+    try {
+        const pool = await getPool();
+
+        const result = await pool.request()
+            .input('ingredientIntakeID', sql.Int, ingredientIntakeID)
+            .query(`
+                SELECT IngredientIntakeID, UserID, MealName, Weight, CONVERT(date, IntakeDate) AS IntakeDate, Location, Energy, Protein, Fat, Fiber
+                FROM IngredientIntakes
+                WHERE IngredientIntakeID = @ingredientIntakeID
+            `);
+
+        if (result.recordset.length > 0) {
+            res.status(200).json(result.recordset[0]);
+        } else {
+            res.status(404).json({ error: 'Ingredient intake not found.' });
+        }
+    } catch (err) {
+        console.error('Error fetching ingredient intake:', err);
+        res.status(500).json({ error: 'An error occurred while fetching ingredient intake.' });
+    }
+});
+
+// Save ingredient intake
+router.post('/saveIngredientIntake', async (req, res) => {
+    const { userID, ingredientName, weight, intakeDate, location, nutritionalData } = req.body;
+    const { energy, protein, fat, fiber } = nutritionalData;
+
+    // Construct SQL query or update statement
+    let query = `
+        INSERT INTO IngredientIntakes (UserID, IngredientName, Weight, IntakeDate, Location, Energy, Protein, Fat, Fiber)
+        VALUES (@userID, @ingredientName, @weight, @intakeDate, @location, @energy, @protein, @fat, @fiber)
+    `;
+
+    try {
+        const pool = await getPool();
+        await pool.request()
+            .input('userID', sql.Int, userID)
+            .input('ingredientName', sql.NVarChar, ingredientName)
+            .input('weight', sql.Float, weight)
+            .input('intakeDate', sql.Date, intakeDate)
+            .input('location', sql.NVarChar, location)
+            .input('energy', sql.Float, energy) 
+            .input('protein', sql.Float, protein)
+            .input('fat', sql.Float, fat)
+            .input('fiber', sql.Float, fiber)
+            .query(query);
+
+        res.status(200).json({ success: true });
+    } catch (err) {
+        console.error('Error saving ingredient intake:', err);
+        res.status(500).json({ error: 'An error occurred while saving the ingredient intake: ' + err.message });
+    }
+});
+
+
+
+
+
+// Delete an ingredient intake
+router.delete('/deleteIngredientIntake', async (req, res) => {
+    const ingredientIntakeID = parseInt(req.query.id, 10);
+    try {
+        const pool = await getPool();
+
+        await pool.request()
+            .input('ingredientIntakeID', sql.Int, ingredientIntakeID)
+            .query(`
+                DELETE FROM IngredientIntakes
+                WHERE IngredientIntakeID = @ingredientIntakeID
+            `);
+
+        res.status(200).json({ success: true });
+    } catch (err) {
+        console.error('Error deleting ingredient intake:', err);
+        res.status(500).json({ error: 'An error occurred while deleting the ingredient intake.' });
+    }
+});
+
+
 module.exports = router;
-
-

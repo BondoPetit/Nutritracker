@@ -129,7 +129,7 @@ document.addEventListener("DOMContentLoaded", function () {
             alert("Geolocation is not supported by this browser.");
         }
     }
-    
+
 
     async function populateTrackerModal(editMode, recordId = null) {
         try {
@@ -152,24 +152,24 @@ document.addEventListener("DOMContentLoaded", function () {
                 <div id="nutritionalDisplay"></div>
                 <button type="button" onclick="saveTracker()">Save Meal Intake</button>
             </form>`;
-    
+
             if (editMode && recordId !== null) {
                 const response = await fetch(`/api/getMealIntake?id=${recordId}`);
                 const record = await response.json();
-    
+
                 const mealNameElem = document.getElementById('mealName');
                 const mealWeightElem = document.getElementById('mealWeight');
                 const intakeDateElem = document.getElementById('intakeDate');
                 const intakeTimeElem = document.getElementById('intakeTime');
                 const locationElem = document.getElementById('location');
-    
+
                 const dateValue = record.IntakeDate ? record.IntakeDate.split('T')[0] : '';
                 let timeValue = '';  // Initialize with an empty string
-    
+
                 if (record.IntakeTime && record.IntakeTime.match(/^\d{2}:\d{2}/)) {
                     timeValue = record.IntakeTime.substring(0, 5);
                 }
-    
+
                 if (mealNameElem) mealNameElem.value = record.MealID || '';
                 if (mealWeightElem) mealWeightElem.value = record.Weight || '';
                 if (intakeDateElem) intakeDateElem.value = dateValue;
@@ -180,10 +180,10 @@ document.addEventListener("DOMContentLoaded", function () {
             console.error('Error fetching meals:', error);
         }
     }
-    
-    
-    
-    
+
+
+
+
 
     function displayMeals() {
         const recordsContainer = document.getElementById('recordsContainer');
@@ -195,8 +195,8 @@ document.addEventListener("DOMContentLoaded", function () {
             recordElement.dataset.recordId = record.MealIntakeID;
 
             const intakeDate = new Date(record.IntakeDate).toLocaleDateString();
-            const intakeTime = new Date(record.IntakeTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit',  timeZone: 'UTC' });
-            
+            const intakeTime = new Date(record.IntakeTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
+
 
             const textElement = document.createElement('p');
             textElement.textContent = `${record.MealName}  ${record.Weight}g  ${intakeDate}  ${intakeTime} Location: ${record.Location}`;
@@ -240,7 +240,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (record && record.Calories !== undefined) {
             const nutritionalData = {
-                energy: record.Calories,
+                energy: record.Energy,
                 protein: record.Protein,
                 fat: record.Fat,
                 fiber: record.Fiber
@@ -257,6 +257,7 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById('nutritionalDetailsModal').style.display = 'block';
         }
     }
+
 
     window.deleteMealRecord = function (mealIntakeID) {
         fetch(`/api/deleteMealIntake?recordId=${mealIntakeID}`, {
@@ -278,6 +279,194 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
     fetchMealIntakes();
+
+
+    window.selectedIngredients = [];
+
+
+    // Function to open the ingredient intake modal
+    window.openIngredientOnlyModal = function () {
+        document.getElementById('ingredientOnly').style.display = 'block';
+        fetchCurrentLocation();
+    };
+
+    window.closeIngredientOnlyModal = function () {
+        document.getElementById('ingredientOnly').style.display = 'none';
+    };
+
+
+    window.saveIngredient = function () {
+        event.preventDefault(); // Prevent the default behavior of changing the URL
+        const userID = getUserIDFromURL();
+        const intakeDate = document.getElementById('intakeDate').value;
+    
+        window.selectedIngredients.forEach(ingredient => {
+            // Get weight from input field
+            const weight = parseFloat(document.getElementById('ingredientWeight').value); // Updated ID to 'ingredientWeight'
+    
+            const payload = {
+                userID: userID,
+                ingredientName: ingredient.ingredientName,
+                weight: weight, // Update with the value from the input field
+                intakeDate: intakeDate,
+                location: document.getElementById('location').value,
+                nutritionalData: {
+                    energy: ingredient.nutrition ? ingredient.nutrition.energy : 0,
+                    protein: ingredient.nutrition ? ingredient.nutrition.protein : 0,
+                    fat: ingredient.nutrition ? ingredient.nutrition.fat : 0,
+                    fiber: ingredient.nutrition ? ingredient.nutrition.fiber : 0
+                }
+            };
+    
+            fetch('/api/saveIngredientIntake', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log("Ingredient saved successfully.");
+                    alert('Ingredient saved successfully.');
+                } else {
+                    throw new Error('Failed to save the ingredient intake');
+                }
+            })
+            .catch(error => {
+                console.error('Error saving the ingredient intake:', error);
+                alert('Error saving the ingredient intake. Please check the console for more details.');
+            });
+        });
+    
+        window.selectedIngredients = [];
+    };
+    
+    
+    
+
+    // Function to search for ingredient name
+    function getFoodItemsBySearch(query) {
+        const url = `https://nutrimonapi.azurewebsites.net/api/FoodItems/BySearch/${query}`;
+        return fetchWithApiKey(url);
+    }
+
+    // Helper function for API requests with apiKey
+    async function fetchWithApiKey(url, options = {}) {
+        const apiKey = '150493';
+        const defaultOptions = {
+            method: 'GET',
+            headers: { 'X-API-Key': apiKey }
+        };
+
+        try {
+            const response = await fetch(url, { ...defaultOptions, ...options });
+            if (!response.ok) {
+                throw new Error(`Error: ${response.status}`);
+            }
+            return response.json();
+        } catch (error) {
+            throw new Error(`Error fetching data: ${error.message}`);
+        }
+    }
+
+    window.fetchAndDisplayNutrition = function (ingredientId) {
+        fetch(`/api/getNutritionData?id=${ingredientId}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log('Fetched Nutrition Data:', data);
+                const form = document.getElementById('ingredientIntakeForm');
+                form.dataset.nutrition = JSON.stringify(data);
+            })
+            .catch(error => console.error('Failed to fetch nutrition data:', error));
+    }
+
+    // Update search results
+    function updateSearchResults(data) {
+        const container = document.getElementById("searchResultsContainer");
+        container.innerHTML = '';
+    
+        data.forEach(item => {
+            const resultItem = document.createElement('div');
+            resultItem.textContent = item.foodName;
+            resultItem.className = 'search-result-item';
+            resultItem.onclick = () => selectIngredient(item);  // Add click handler
+            container.appendChild(resultItem);
+        });
+    }
+
+
+    function selectIngredient(item) {
+        fetchNutritionData(item.foodID).then(nutrition => {
+            window.selectedIngredients.push({
+                ingredientName: item.foodName,
+                weight: item.weight,  // Assuming weight is provided elsewhere
+                nutrition: nutrition
+            });
+    
+            // Dynamically create the weight input field
+            const weightInput = document.createElement('input');
+            weightInput.type = 'number';
+            weightInput.placeholder = 'Enter weight';
+            weightInput.required = true;
+            weightInput.setAttribute('name', 'weight'); // Set the name attribute for form submission
+            weightInput.setAttribute('id', 'ingredientWeight'); // Set a unique id for accessing later
+            weightInput.setAttribute('min', '0'); // Optionally, set minimum value if needed
+    
+            // Get the ingredient intake form
+            const form = document.getElementById('ingredientIntakeForm');
+            if (form) {
+                // Add the weight input field to the form
+                form.insertBefore(weightInput, form.querySelector('[name="location"]').nextSibling); // Adjust selector as needed
+            } else {
+                console.error('Ingredient intake form not found.');
+            }
+    
+            console.log("Selected Ingredients:", window.selectedIngredients);
+        });
+    }
+    
+    
+
+
+
+    // Function to handle the search action
+    function handleSearch() {
+        const query = document.getElementById('ingredientName').value;
+        getFoodItemsBySearch(query)
+            .then(data => {
+                updateSearchResults(data);
+            })
+            .catch(error => {
+                console.error('Error searching for ingredient:', error);
+                alert('An error occurred while searching for the ingredient. Please try again.');
+            });
+    }
+
+    // Function to fetch nutrition data based on FoodID
+    window.fetchNutritionData = async function (foodID) {
+        const sortKeys = {
+            '1030': 'energy',
+            '1110': 'protein',
+            '1240': 'fat',
+            '1310': 'fiber'
+        };
+
+        const promises = Object.keys(sortKeys).map(sortKey => {
+            const url = `https://nutrimonapi.azurewebsites.net/api/FoodCompSpecs/ByItem/${foodID}/BySortKey/${sortKey}`;
+            return fetchWithApiKey(url).then(data => {
+                const value = parseFloat(data[0]?.resVal.replace(',', '.')) || 0;
+                return { [sortKeys[sortKey]]: value };
+            });
+        });
+
+        return Promise.all(promises).then(results => results.reduce((acc, result) => Object.assign(acc, result), {}));
+    }
+
+
+
+    document.getElementById('searchButton').addEventListener('click', handleSearch);
+
+
 });
-
-

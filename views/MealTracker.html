@@ -74,27 +74,30 @@
                     <!-- Modal content will be added dynamically by JavaScript -->
                 </div>
 
-                <!-- Modal to add ingredients-->
-                <div id="ingredientOnly" class="modal">
+                <!-- Popup for adding ingredient intake -->
+                <div id="ingredientOnly" class="modal" style="display: none;">
                     <div class="modal-content">
                         <span class="close" onclick="closeIngredientOnlyModal()">&times;</span>
                         <h2>Add Ingredient Intake</h2>
                         <form id="ingredientIntakeForm">
                             <label for="ingredientName">Ingredient Name:</label>
-                            <input type="text" id="ingredientName" name="ingredientName" placeholder="Enter ingredient name" required>
+                            <input type="text" id="ingredientName" name="ingredientName"
+                                placeholder="Enter ingredient name" required>
                             <!-- Addition of search button next to ingredient name -->
-                            <button type="button" id="searchButtonAll">Search</button>
-                            <!-- End of addition -->
-                            <label for="ingredientWeight">Weight (g):</label>
-                            <input type="number" id="ingredientWeight" name="ingredientWeight" placeholder="Enter weight" required>
+                            <button type="button" id="searchButton">Search</button>
                             <label for="intakeDate">Date:</label>
                             <input type="date" id="intakeDate" name="intakeDate" required>
-                            <label for="intakeTime">Time:</label>
-                            <input type="time" id="intakeTime" name="intakeTime" required>
-                            <button type="button" onclick="addIngredientModal()">Save Ingredient Intake</button>
+                            <!-- New location field -->
+                            <label for="location">Location:</label>
+                            <input type="text" id="location" name="location" placeholder="Enter location">
+                            <button onclick="window.saveIngredient()">Save Ingredient</button>
                         </form>
+                        <!-- Search results container -->
+                        <div id="searchResultsContainer"></div>
                     </div>
                 </div>
+
+
 
                 <!-- Nutritional Info Modal -->
                 <div id="nutritionalDetailsModal" class="modal" style="display:none;">
@@ -108,9 +111,6 @@
     </div>
     <script type="module" src="/js/scriptNav.js"></script>
     <script type="module" src="/js/scriptTracker.js"></script>
-
 </body>
 
 </html>
-
-
