@@ -45,6 +45,34 @@ app.use('/api', activityController); // Handles activity-related API routes
 app.use('/api', dailyController); // Handles daily nutrition-related API routes
 app.use('/api', statsController); // Handles user statistics-related API routes
 
+// Pinger function to measure RTT
+async function measureRTT() {
+    const startTime = Date.now(); // Start time of the request
+
+    try {
+        // Send a GET request to the server
+        const response = await new Promise((resolve, reject) => {
+            http.get(`http://localhost:${port}`, (res) => {
+                resolve(res);
+            }).on('error', (err) => {
+                reject(err);
+            });
+        });
+
+        const endTime = Date.now(); // End time when response is received
+        const RTT = endTime - startTime; // Calculate RTT
+
+        console.log(`RTT: ${RTT} ms`); // Log the RTT to the console
+
+    } catch (error) {
+        console.error('Error measuring RTT:', error);
+    }
+}
+
+// Run the pinger every 5 seconds to measure RTT
+setInterval(measureRTT, 5000);
+
+
 // Start the server and listen on the specified port
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}/`);
