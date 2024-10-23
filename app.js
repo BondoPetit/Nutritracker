@@ -43,30 +43,37 @@ app.use('/api', statsController);
 
 // Pinger function to measure RTT
 async function measureRTT() {
-    const startTime = Date.now(); // Start time of the request
+    const startTime = Date.now(); // Starttidspunkt for anmodning (RTT)
 
     try {
-        // Send a GET request to the server
         const response = await new Promise((resolve, reject) => {
-            http.get(`http://localhost:${port}`, (res) => {
+            const req = http.get('http://localhost:3000', (res) => {
+                const responseTime = Date.now(); // Tidspunkt for modtagelse af svar fra serveren (responstid)
                 resolve(res);
-            }).on('error', (err) => {
+            });
+            
+            req.on('response', () => {
+                const responseTime = Date.now(); // Tidspunktet hvor serveren begynder at svare
+                const responstid = responseTime - startTime;
+                console.log(`Responstid: ${responstid} ms`);
+            });
+
+            req.on('error', (err) => {
                 reject(err);
             });
         });
 
-        const endTime = Date.now(); // End time when response is received
-        const RTT = endTime - startTime; // Calculate RTT
-
-        console.log(`RTT: ${RTT} ms`); // Log the RTT to the console
+        const RTT = Date.now() - startTime; // Beregn RTT
+        console.log(`RTT: ${RTT} ms`);
 
     } catch (error) {
-        console.error('Error measuring RTT:', error);
+        console.error('Error measuring RTT and Responstid:', error);
     }
 }
 
-// Run the pinger every 5 seconds to measure RTT
+// Kør pinger-funktionen hvert 5. sekund for at måle RTT og responstid
 setInterval(measureRTT, 5000);
+
 
 // Start the server and listen on the specified port
 app.listen(port, () => {
